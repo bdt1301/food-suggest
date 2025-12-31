@@ -1,0 +1,27 @@
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+th.sortable {
+    cursor: pointer;
+}
+
+.th-content {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+}
+
+th.sortable:hover .th-label {
+    text-decoration: underline;
+}
+
+.th-arrow {
+    width: 16px;
+    display: inline-block;
+    text-align: right;
+}

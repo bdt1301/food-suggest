@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gợi ý món ăn</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="/css/style.css" />
+    </head>
+    <body class="bg-light">
+        <div th:replace="fragments/header :: header"></div>
+
+        <div class="container py-4 flex-grow-1">
+            <h1 class="text-center mb-4">Gợi ý món ăn</h1>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="type : ${dishTypes}">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0" th:text="${type.label}"></h5>
+
+                                <a th:href="@{/add/{type}(type=${type.name()})}" class="btn btn-sm btn-primary">
+                                    Thêm
+                                </a>
+                            </div>
+
+                            <!-- Dish list -->
+                            <ul class="list-group list-group-flush flex-grow-1">
+                                <li
+                                    class="list-group-item d-flex justify-content-between align-items-center"
+                                    th:each="dish : ${groups[type.name()]}"
+                                >
+                                    <span th:text="${dish.dishName}"></span>
+
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/{id}/eat(id=${dish.id})}" class="btn btn-success"> Ăn </a>
+                                        <a th:href="@{/{id}/random(id=${dish.id})}" class="btn btn-warning"> Đổi </a>
+                                        <a th:href="@{/{id}/remove(id=${dish.id})}" class="btn btn-danger"> Bỏ </a>
+                                    </div>
+                                </li>
+
+                                <!-- Empty state -->
+                                <li
+                                    class="list-group-item text-muted text-center fst-italic"
+                                    th:if="${groups[type.name()] == null}"
+                                >
+                                    Chưa có món nào được chọn
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"></div>
+
+        <!-- Bootstrap JS (optional) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

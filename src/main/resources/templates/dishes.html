@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Danh sách món ăn</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+            integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+
+        <link rel="stylesheet" href="/css/style.css" />
+    </head>
+
+    <body class="bg-light">
+        <div th:replace="fragments/header :: header"></div>
+
+        <div class="container py-4 flex-grow-1">
+            <!-- Tiêu đề -->
+            <h1 class="mb-4 text-center">Danh sách món ăn</h1>
+
+            <!-- Hàng nút Thêm + Search -->
+            <div class="row justify-content-between align-items-center mb-3">
+                <div class="col-auto">
+                    <button class="btn btn-primary" onclick="openDishModal()">Thêm món</button>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3">
+                    <input
+                        type="text"
+                        id="search-name"
+                        class="form-control"
+                        placeholder="Tìm món..."
+                        onkeyup="searchName()"
+                    />
+                </div>
+            </div>
+
+            <div class="mb-4 d-flex justify-content-end gap-2">
+                <a href="/dishes/mark-all-eaten" class="btn btn-success">Đánh dấu tất cả đã ăn</a>
+                <a href="/dishes/mark-all-uneaten" class="btn btn-warning">Đánh dấu tất cả chưa ăn</a>
+            </div>
+
+            <!-- Table -->
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="dishesTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th data-sort class="sortable">
+                                    <div class="th-content">
+                                        <span class="th-label">Tên món</span>
+                                        <span class="th-arrow"></span>
+                                    </div>
+                                </th>
+                                <th data-sort class="sortable d-none d-md-table-cell">
+                                    <div class="th-content">
+                                        <span class="th-label">Loại</span>
+                                        <span class="th-arrow"></span>
+                                    </div>
+                                </th>
+                                <th data-sort class="sortable">
+                                    <div class="th-content">
+                                        <span class="th-label">Đã ăn?</span>
+                                        <span class="th-arrow"></span>
+                                    </div>
+                                </th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr th:each="dish : ${dishes}">
+                                <td th:text="${dish.dishName}"></td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge bg-secondary" th:text="${dish.dishType.label}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${dish.hasEaten}" class="badge bg-success">Đã ăn</span>
+                                    <span th:if="${!dish.hasEaten}" class="badge bg-danger">Chưa ăn</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-warning" th:onclick="|openDishModal(${dish.id})|">
+                                            Sửa
+                                        </button>
+
+                                        <a th:href="@{/dishes/{id}/delete(id=${dish.id})}" class="btn btn-danger"
+                                            >Xoá</a
+                                        >
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(dishes)}">
+                                <td colspan="4" class="text-center text-muted fst-italic py-4">Chưa có món ăn nào!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="fragments/footer :: footer"></div>
+
+        <!-- Dish Modal -->
+        <div class="modal fade" id="dishModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dishModalTitle">Thêm món ăn</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body" id="dishModalBody">
+                        <!-- Form sẽ được load vào đây -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Search bar -->
+        <script>
+            function searchName() {
+                const input = document.getElementById('search-name');
+                const filter = input.value.toLowerCase();
+                const table = document.getElementById('dishesTable');
+                const trs = table.getElementsByTagName('tr');
+
+                // Bỏ qua header (i=1)
+                for (let i = 1; i < trs.length; i++) {
+                    const td = trs[i].getElementsByTagName('td')[0];
+                    if (td) {
+                        const txtValue = td.textContent || td.innerText;
+                        if (fuzzySearch(filter, txtValue.toLowerCase())) {
+                            trs[i].style.display = ''; // Hiển thị
+                        } else {
+                            trs[i].style.display = 'none'; // Ẩn
+                        }
+                    }
+                }
+            }
+
+            // Hàm fuzzy search
+            function fuzzySearch(pattern, text) {
+                let patternIdx = 0;
+                let textIdx = 0;
+                while (textIdx < text.length) {
+                    if (pattern[patternIdx] === text[textIdx]) {
+                        patternIdx++;
+                    }
+                    textIdx++;
+                    if (patternIdx === pattern.length) break;
+                }
+                return patternIdx === pattern.length;
+            }
+        </script>
+
+        <!-- Sort table -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const table = document.querySelector('table');
+                const headers = table.querySelectorAll('th.sortable');
+                const tbody = table.querySelector('tbody');
+                const sortState = {};
+
+                headers.forEach((header, colIndex) => {
+                    sortState[colIndex] = 'asc';
+
+                    header.addEventListener('click', () => {
+                        const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.children.length > 1);
+
+                        rows.sort((a, b) => {
+                            const textA = a.children[colIndex].innerText.trim();
+                            const textB = b.children[colIndex].innerText.trim();
+                            return sortState[colIndex] === 'asc'
+                                ? textA.localeCompare(textB, 'vi')
+                                : textB.localeCompare(textA, 'vi');
+                        });
+
+                        // Đặt mũi tên cho header đang click
+                        headers.forEach((h, i) => {
+                            const arrow = h.querySelector('.th-arrow');
+                            if (i === colIndex) {
+                                arrow.innerHTML =
+                                    sortState[colIndex] === 'asc'
+                                        ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
+                                        : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
+                            } else {
+                                arrow.innerHTML = ''; // xóa mũi tên cột khác
+                            }
+                        });
+
+                        sortState[colIndex] = sortState[colIndex] === 'asc' ? 'desc' : 'asc';
+
+                        rows.forEach((row) => tbody.appendChild(row));
+                    });
+                });
+            });
+        </script>
+
+        <!-- Dish form modal -->
+        <script>
+            function openDishModal(id = null) {
+                let url = '/dishes/modal';
+                if (id) url += '?id=' + id;
+
+                fetch(url)
+                    .then((res) => res.text())
+                    .then((html) => {
+                        document.getElementById('dishModalBody').innerHTML = html;
+                        document.getElementById('dishModalTitle').innerText = id ? 'Chỉnh sửa món ăn' : 'Thêm món ăn';
+
+                        const modal = new bootstrap.Modal(document.getElementById('dishModal'));
+                        modal.show();
+                    });
+            }
+        </script>
+    </body>
+</html>
