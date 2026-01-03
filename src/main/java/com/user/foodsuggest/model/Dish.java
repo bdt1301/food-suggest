@@ -1,7 +1,5 @@
 package com.user.foodsuggest.model;
 
-import com.user.foodsuggest.enums.DishType;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -14,7 +12,8 @@ public class Dish {
 
 	private String dishName;
 
-	@Enumerated(EnumType.STRING)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "dish_type_id", nullable = false)
 	private DishType dishType;
 
 	private boolean hasEaten;

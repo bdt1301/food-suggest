@@ -16,11 +16,34 @@
         />
     </div>
 
+    <!-- Chọn loại có sẵn -->
     <div class="mb-3">
-        <label class="form-label fw-semibold">Loại món</label>
-        <select class="form-select form-select-lg" th:field="*{dishType}">
-            <option th:each="type : ${dishTypes}" th:value="${type}" th:text="${type.label}"></option>
+        <label class="form-label fw-semibold">Chọn loại món</label>
+        <select id="dishTypeSelect" class="form-select form-select-lg mb-2" th:field="*{dishType}" required>
+            <option value="">-- Chọn loại có sẵn --</option>
+            <option th:each="type : ${dishTypes}" th:value="${type.id}" th:text="${type.label}"></option>
         </select>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleNewDishType()">
+            Không có loại nào để chọn?
+        </button>
+    </div>
+
+    <!-- Nhập loại mới (ẩn mặc định) -->
+    <div class="mb-3 d-none" id="newDishTypeBox">
+        <label class="form-label fw-semibold">Thêm loại mới</label>
+
+        <div class="d-flex gap-2">
+            <input
+                type="text"
+                id="newDishTypeInput"
+                class="form-control form-control-lg"
+                placeholder="Ví dụ: Món xào"
+            />
+
+            <button type="button" class="btn btn-success" onclick="addDishType()">Thêm</button>
+        </div>
+
+        <div class="form-text text-muted">Loại món sẽ được thêm và tự động chọn</div>
     </div>
 
     <div class="form-check form-switch mb-4">
