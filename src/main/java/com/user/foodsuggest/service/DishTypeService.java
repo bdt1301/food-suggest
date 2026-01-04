@@ -2,6 +2,7 @@ package com.user.foodsuggest.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.user.foodsuggest.model.DishType;
@@ -21,7 +22,7 @@ public class DishTypeService {
 
     // ===== READ =====
     public List<DishType> findAll() {
-        return dishTypeRepository.findAll();
+        return dishTypeRepository.findAll(Sort.by("id"));
     }
 
     public DishType findById(Long id) {
@@ -36,10 +37,11 @@ public class DishTypeService {
 
     // ===== UPDATE =====
     @Transactional
-    public void update(Long id, String label) {
+    public DishType update(Long id, String label) {
         DishType type = dishTypeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("DishType not found: " + id));
         type.setLabel(label);
+        return type;
     }
 
     // ===== DELETE =====

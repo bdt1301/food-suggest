@@ -3,6 +3,7 @@ package com.user.foodsuggest.service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.user.foodsuggest.model.Dish;
@@ -26,7 +27,7 @@ public class DishService {
 
 	// READ
 	public List<Dish> findAll() {
-		return dishRepository.findAll();
+		return dishRepository.findAll(Sort.by("id"));
 	}
 
 	public Dish findById(Long id) {

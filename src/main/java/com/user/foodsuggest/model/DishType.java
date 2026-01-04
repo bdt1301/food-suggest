@@ -3,6 +3,8 @@ package com.user.foodsuggest.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +25,7 @@ public class DishType {
 	@Column(nullable = false)
 	private String label; // Món canh, Món mặn
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "dishType", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Dish> dishes = new ArrayList<>();
 
