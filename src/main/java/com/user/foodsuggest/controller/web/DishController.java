@@ -1,4 +1,4 @@
-package com.user.foodsuggest.controller;
+package com.user.foodsuggest.controller.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

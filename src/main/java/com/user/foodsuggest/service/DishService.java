@@ -73,29 +73,29 @@ public class DishService {
 						dish -> dish.getDishType().getId()));
 	}
 
-	public void addRandomDish(Long dishTypeId) {
+	public Dish addRandomDish(Long dishTypeId) {
 		DishType type = dishTypeRepository.findById(dishTypeId)
 				.orElseThrow(() -> new EntityNotFoundException("DishType not found"));
 
 		List<Dish> pool = dishRepository.findByDishTypeAndHasEatenFalseAndActiveFalse(type);
 
 		if (pool.isEmpty())
-			return;
+			return null;
 
 		Dish random = pool.get(new Random().nextInt(pool.size()));
 		random.setActive(true);
 
-		dishRepository.save(random);
+		return dishRepository.save(random);
 	}
 
-	public void randomDish(Long id) {
+	public Dish randomDish(Long id) {
 		Dish current = findById(id);
 		DishType type = current.getDishType();
 
 		List<Dish> pool = dishRepository.findByDishTypeAndHasEatenFalseAndActiveFalse(type);
 
 		if (pool.isEmpty())
-			return;
+			return null;
 
 		Dish random = pool.get(new Random().nextInt(pool.size()));
 
@@ -103,7 +103,7 @@ public class DishService {
 		random.setActive(true);
 
 		dishRepository.save(current);
-		dishRepository.save(random);
+		return dishRepository.save(random);
 	}
 
 	public void remove(Long id) {
