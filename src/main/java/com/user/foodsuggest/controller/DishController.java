@@ -5,7 +5,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.user.foodsuggest.model.Dish;
-import com.user.foodsuggest.model.DishType;
 import com.user.foodsuggest.service.DishService;
 import com.user.foodsuggest.service.DishTypeService;
 
