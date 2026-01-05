@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.service.DishService;
 import com.user.foodsuggest.service.DishTypeService;
 
@@ -30,21 +31,15 @@ public class SuggestionRestController {
 	}
 
 	@PostMapping("/add/{typeId}")
-	public ResponseEntity<?> add(@PathVariable Long typeId) {
+	public ResponseEntity<Dish> add(@PathVariable Long typeId) {
 		var newDish = dishService.addRandomDish(typeId);
 		return ResponseEntity.ok(newDish);
 	}
 
-	@GetMapping("/{id}/random")
-	public ResponseEntity<?> random(@PathVariable Long id) {
+	@PostMapping("/{id}/random")
+	public ResponseEntity<Dish> random(@PathVariable Long id) {
 		var newDish = dishService.randomDish(id);
 		return ResponseEntity.ok(newDish);
-	}
-
-	@DeleteMapping("/{id}/remove")
-	public ResponseEntity<Void> remove(@PathVariable Long id) {
-		dishService.remove(id);
-		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/{id}/eat")
@@ -53,15 +48,10 @@ public class SuggestionRestController {
 		return ResponseEntity.ok().build();
 	}
 
-	@PutMapping("/dish-types/{id}")
-	public ResponseEntity<Void> edit(@PathVariable Long id, @RequestParam String label) {
-		dishTypeService.update(id, label);
+	@DeleteMapping("/{id}/remove")
+	public ResponseEntity<Void> remove(@PathVariable Long id) {
+		dishService.remove(id);
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/dish-types/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		dishTypeService.delete(id);
-		return ResponseEntity.ok().build();
-	}
 }
