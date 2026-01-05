@@ -45,14 +45,13 @@
             </div>
 
             <div class="mb-4 d-flex justify-content-end gap-2">
-                <a href="/dishes/mark-all-eaten" class="btn btn-success">Đánh dấu tất cả đã ăn</a>
-                <a href="/dishes/mark-all-uneaten" class="btn btn-warning">Đánh dấu tất cả chưa ăn</a>
+                <button class="btn btn-success" onclick="markAllEaten()">Đánh dấu tất cả đã ăn</button>
+                <button class="btn btn-warning" onclick="markAllUneaten()">Đánh dấu tất cả chưa ăn</button>
             </div>
 
-            <!-- Table -->
             <div class="card shadow-sm">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="dishesTable">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-dark">
                             <tr>
                                 <th data-sort class="sortable">
@@ -76,31 +75,9 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-
-                        <tbody>
-                            <tr th:each="dish : ${dishes}">
-                                <td th:text="${dish.dishName}"></td>
-                                <td class="d-none d-md-table-cell">
-                                    <span class="badge bg-secondary" th:text="${dish.dishType.label}"></span>
-                                </td>
-                                <td>
-                                    <span th:if="${dish.hasEaten}" class="badge bg-success">Đã ăn</span>
-                                    <span th:if="${!dish.hasEaten}" class="badge bg-danger">Chưa ăn</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-warning" th:onclick="|openDishModal(${dish.id})|">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-
-                                        <a th:href="@{/dishes/{id}/delete(id=${dish.id})}" class="btn btn-danger"
-                                            ><i class="fa-solid fa-trash"></i
-                                        ></a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(dishes)}">
-                                <td colspan="4" class="text-center text-muted fst-italic py-4">Chưa có món ăn nào!</td>
+                        <tbody id="dishesTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Đang tải dữ liệu...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -129,151 +106,7 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Search bar -->
-        <script>
-            function searchName() {
-                const input = document.getElementById('search-name');
-                const filter = input.value.toLowerCase();
-                const table = document.getElementById('dishesTable');
-                const trs = table.getElementsByTagName('tr');
-
-                // Bỏ qua header (i=1)
-                for (let i = 1; i < trs.length; i++) {
-                    const td = trs[i].getElementsByTagName('td')[0];
-                    if (td) {
-                        const txtValue = td.textContent || td.innerText;
-                        if (fuzzySearch(filter, txtValue.toLowerCase())) {
-                            trs[i].style.display = ''; // Hiển thị
-                        } else {
-                            trs[i].style.display = 'none'; // Ẩn
-                        }
-                    }
-                }
-            }
-
-            // Hàm fuzzy search
-            function fuzzySearch(pattern, text) {
-                let patternIdx = 0;
-                let textIdx = 0;
-                while (textIdx < text.length) {
-                    if (pattern[patternIdx] === text[textIdx]) {
-                        patternIdx++;
-                    }
-                    textIdx++;
-                    if (patternIdx === pattern.length) break;
-                }
-                return patternIdx === pattern.length;
-            }
-        </script>
-
-        <!-- Sort table -->
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const table = document.querySelector('table');
-                const headers = table.querySelectorAll('th.sortable');
-                const tbody = table.querySelector('tbody');
-                const sortState = {};
-
-                headers.forEach((header, colIndex) => {
-                    sortState[colIndex] = 'asc';
-
-                    header.addEventListener('click', () => {
-                        const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.children.length > 1);
-
-                        rows.sort((a, b) => {
-                            const textA = a.children[colIndex].innerText.trim();
-                            const textB = b.children[colIndex].innerText.trim();
-                            return sortState[colIndex] === 'asc'
-                                ? textA.localeCompare(textB, 'vi')
-                                : textB.localeCompare(textA, 'vi');
-                        });
-
-                        // Đặt mũi tên cho header đang click
-                        headers.forEach((h, i) => {
-                            const arrow = h.querySelector('.th-arrow');
-                            if (i === colIndex) {
-                                arrow.innerHTML =
-                                    sortState[colIndex] === 'asc'
-                                        ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
-                                        : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
-                            } else {
-                                arrow.innerHTML = ''; // xóa mũi tên cột khác
-                            }
-                        });
-
-                        sortState[colIndex] = sortState[colIndex] === 'asc' ? 'desc' : 'asc';
-
-                        rows.forEach((row) => tbody.appendChild(row));
-                    });
-                });
-            });
-        </script>
-
-        <!-- Dish form modal -->
-        <script>
-            function openDishModal(id = null) {
-                let url = '/dishes/modal';
-                if (id) url += '?id=' + id;
-
-                fetch(url)
-                    .then((res) => res.text())
-                    .then((html) => {
-                        document.getElementById('dishModalBody').innerHTML = html;
-                        document.getElementById('dishModalTitle').innerText = id ? 'Chỉnh sửa món ăn' : 'Thêm món ăn';
-
-                        const modal = new bootstrap.Modal(document.getElementById('dishModal'));
-                        modal.show();
-                    });
-            }
-        </script>
-
-        <!-- Handle new dish type -->
-        <script>
-            function toggleNewDishType() {
-                document.getElementById('newDishTypeBox').classList.toggle('d-none');
-            }
-
-            async function addDishType() {
-                const input = document.getElementById('newDishTypeInput');
-                const label = input.value.trim();
-
-                if (!label) {
-                    alert('Vui lòng nhập tên loại món');
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/api/dish-types', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({ label }),
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Không thể thêm loại món');
-                    }
-
-                    const dishType = await response.json();
-
-                    const select = document.getElementById('dishTypeSelect');
-
-                    // Tạo option mới
-                    const option = document.createElement('option');
-                    option.value = dishType.id;
-                    option.textContent = dishType.label;
-                    option.selected = true;
-
-                    select.appendChild(option);
-
-                    // Reset input & ẩn box
-                    input.value = '';
-                    document.getElementById('newDishTypeBox').classList.add('d-none');
-                } catch (err) {
-                    alert(err.message);
-                }
-            }
-        </script>
+        <script src="js/dishes.js"></script>
+        <script src="js/dish-form.js"></script>
     </body>
 </html>
