@@ -45,8 +45,8 @@ function renderLayout(dishTypes, groups) {
                                     type.id
                                 }" onsubmit="return false;">
                                     <input type="text" id="input-${type.id}" value="${
-                                    type.label
-                                }" class="form-control form-control-sm" required />
+            type.label
+        }" class="form-control form-control-sm" required />
                                     <button type="button" class="btn btn-sm btn-success" onclick="saveEdit(${
                                         type.id
                                     })"><i class="fa-solid fa-floppy-disk"></i></button>
@@ -118,7 +118,10 @@ function addDish(typeId) {
             `;
             ul.appendChild(li);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            showToast({ message: 'Không còn món nào để gợi ý', type: 'error' });
+            console.error(err);
+        });
 }
 
 // 2. Đổi món
@@ -140,6 +143,10 @@ function randomDish(dishId, typeId) {
                 btns[1].setAttribute('onclick', `randomDish(${newDish.id}, ${typeId})`);
                 btns[2].setAttribute('onclick', `removeDish(${newDish.id}, ${typeId})`);
             }
+        })
+        .catch((err) => {
+            showToast({ message: 'Không còn món nào để đổi', type: 'error' });
+            console.error(err);
         });
 }
 
@@ -156,19 +163,38 @@ function removeDish(dishId, typeId) {
 
 // 4. Ăn món
 function eatDish(dishId, typeId) {
-    fetch(`${API_BASE}/${dishId}/eat`, { method: 'POST' }).then((response) => {
-        if (response.ok) {
+    fetch(`${API_BASE}/${dishId}/eat`, { method: 'POST' })
+        .then((response) => {
+            if (!response.ok) throw new Error();
+            return response.json();
+        })
+        .then((data) => {
             const row = document.getElementById(`dish-item-${dishId}`);
             if (row) {
                 row.style.opacity = '0.5';
                 row.style.textDecoration = 'line-through';
+
                 setTimeout(() => {
                     row.remove();
                     checkEmpty(typeId);
                 }, 500);
             }
-        }
-    });
+
+            // Toast reset
+            if (data.resetPerformed) {
+                showToast({
+                    message: 'Đã reset tất cả món trong loại này',
+                    type: 'warning',
+                });
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            showToast({
+                message: 'Ăn món không thành công',
+                type: 'error',
+            });
+        });
 }
 
 // Check danh sách có rỗng không

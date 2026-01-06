@@ -43,9 +43,14 @@ public class SuggestionRestController {
 	}
 
 	@PostMapping("/{id}/eat")
-	public ResponseEntity<Void> eat(@PathVariable Long id) {
-		dishService.markAsEaten(id);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<?> eat(@PathVariable Long id) {
+		Dish eatenDish = dishService.markAsEaten(id);
+
+		boolean reset = dishService
+				.resetIfAllEatenByDishType(eatenDish.getDishType());
+
+		return ResponseEntity.ok(Map.of(
+				"resetPerformed", reset));
 	}
 
 	@DeleteMapping("/{id}/remove")

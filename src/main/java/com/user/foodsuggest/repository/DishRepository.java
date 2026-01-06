@@ -8,6 +8,8 @@ import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.model.DishType;
 
 public interface DishRepository extends JpaRepository<Dish, Long> {
+	List<Dish> findByDishType(DishType dishType);
+
 	List<Dish> findByHasEatenFalse();
 
 	List<Dish> findByHasEatenTrue();

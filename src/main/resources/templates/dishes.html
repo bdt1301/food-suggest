@@ -17,7 +17,7 @@
             referrerpolicy="no-referrer"
         />
 
-        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" th:href="@{/css/style.css}" />
     </head>
 
     <body class="bg-light">
@@ -45,7 +45,6 @@
             </div>
 
             <div class="mb-4 d-flex justify-content-end gap-2">
-                <button class="btn btn-success" onclick="markAllEaten()">Đánh dấu tất cả đã ăn</button>
                 <button class="btn btn-warning" onclick="markAllUneaten()">Đánh dấu tất cả chưa ăn</button>
             </div>
 
@@ -106,7 +105,8 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script src="js/dishes.js"></script>
-        <script src="js/dish-form.js"></script>
+        <script th:src="@{/js/dishes.js}"></script>
+        <script th:src="@{/js/dish-form.js}"></script>
+        <script th:src="@{/js/toast.js}"></script>
     </body>
 </html>

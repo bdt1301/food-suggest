@@ -123,14 +123,37 @@ function submitDish(event, id) {
     })
         .then((res) => {
             if (!res.ok) throw new Error();
-            bootstrap.Modal.getInstance(document.getElementById('dishModal')).hide();
-            loadDishes();
+            return res.json();
         })
-        .catch(() => alert('Lưu món ăn thất bại 😢'));
+        .then((data) => {
+            bootstrap.Modal.getInstance(document.getElementById('dishModal')).hide();
+
+            loadDishes();
+
+            // Toast chính
+            showToast({
+                message: id ? 'Cập nhật món ăn thành công' : 'Thêm món ăn thành công',
+                type: 'success',
+            });
+
+            // Toast reset
+            if (data.resetPerformed) {
+                showToast({
+                    message: 'Đã reset tất cả món trong loại này',
+                    type: 'warning',
+                });
+            }
+        })
+        .catch((err) => {
+            showToast({
+                message: 'Lưu món ăn không thành công',
+                type: 'error',
+            });
+            console.error(err);
+        });
 }
 
 // Add new dish type
-
 function toggleNewDishType() {
     document.getElementById('newDishTypeBox').classList.toggle('d-none');
 }
@@ -140,7 +163,10 @@ async function addDishType() {
     const label = input.value.trim();
 
     if (!label) {
-        alert('Vui lòng nhập tên loại món');
+        showToast({
+            message: 'Vui lòng nhập tên loại món',
+            type: 'warning',
+        });
         return;
     }
 
@@ -153,15 +179,11 @@ async function addDishType() {
             body: new URLSearchParams({ label }),
         });
 
-        if (!response.ok) {
-            throw new Error('Không thể thêm loại món');
-        }
+        if (!response.ok) throw new Error();
 
         const dishType = await response.json();
-
         const select = document.getElementById('dishTypeSelect');
 
-        // Tạo option mới
         const option = document.createElement('option');
         option.value = dishType.id;
         option.textContent = dishType.label;
@@ -169,10 +191,18 @@ async function addDishType() {
 
         select.appendChild(option);
 
-        // Reset input & ẩn box
         input.value = '';
         document.getElementById('newDishTypeBox').classList.add('d-none');
+
+        showToast({
+            message: `Loại món "${dishType.label}" đã được tạo`,
+            type: 'success',
+        });
     } catch (err) {
-        alert(err.message);
+        showToast({
+            message: 'Không thể tạo loại món',
+            type: 'error',
+        });
+        console.error(err);
     }
 }

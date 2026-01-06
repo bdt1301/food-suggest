@@ -17,7 +17,7 @@
             referrerpolicy="no-referrer"
         />
 
-        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" th:href="@{/css/style.css}" />
     </head>
     <body class="bg-light">
         <div th:replace="fragments/header :: header"></div>
@@ -36,7 +36,8 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- Render body page -->
-        <script src="js/suggestions.js"></script>
-        <script src="js/handle-dish-type.js"></script>
+        <script th:src="@{/js/suggestions.js}"></script>
+        <script th:src="@{/js/handle-dish-type.js}"></script>
+        <script th:src="@{/js/toast.js}"></script>
     </body>
 </html>

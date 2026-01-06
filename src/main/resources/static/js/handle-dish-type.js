@@ -3,7 +3,13 @@ function saveEdit(id) {
     const input = document.getElementById(`input-${id}`);
     const newLabel = input.value.trim();
 
-    if (!newLabel) return;
+    if (!newLabel) {
+        showToast({
+            message: 'Tên loại món không được để trống',
+            type: 'warning',
+        });
+        return;
+    }
 
     fetch(`/api/dish-types/${id}`, {
         method: 'PUT',
@@ -18,7 +24,10 @@ function saveEdit(id) {
             cancelEdit(id);
         })
         .catch((err) => {
-            alert('Lỗi khi cập nhật loại món!');
+            showToast({
+                message: 'Cập nhật loại món thất bại',
+                type: 'error',
+            });
             console.error(err);
         });
 }
@@ -51,9 +60,17 @@ function deleteType(id) {
             if (element) {
                 element.remove();
             }
+
+            showToast({
+                message: 'Loại món và các món liên quan đã bị xoá',
+                type: 'success',
+            });
         })
         .catch((err) => {
-            alert('Không thể xoá loại món!');
+            showToast({
+                message: 'Xoá loại món thất bại',
+                type: 'error',
+            });
             console.error(err);
         });
 }
