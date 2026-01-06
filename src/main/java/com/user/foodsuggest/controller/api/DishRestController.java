@@ -32,19 +32,35 @@ public class DishRestController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Dish> create(@RequestBody Dish dish) {
+    public ResponseEntity<?> create(@RequestBody Dish dish) {
         Dish createdDish = dishService.create(dish);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdDish);
+
+        boolean reset = false;
+        if (createdDish.isHasEaten()) {
+            reset = dishService
+                    .resetIfAllEatenByDishType(createdDish.getDishType());
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "dish", createdDish,
+                        "resetPerformed", reset));
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Dish> update(
+    public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestBody Dish dish) {
 
         Dish updatedDish = dishService.update(id, dish);
-        return ResponseEntity.ok(updatedDish);
+
+        boolean reset = dishService
+                .resetIfAllEatenByDishType(updatedDish.getDishType());
+
+        return ResponseEntity.ok(Map.of(
+                "dish", updatedDish,
+                "resetPerformed", reset));
     }
 
     // DELETE
@@ -52,13 +68,6 @@ public class DishRestController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         dishService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // MARK ALL EATEN
-    @PutMapping("/mark-all-eaten")
-    public ResponseEntity<Void> markAllEaten() {
-        dishService.markAllAsEaten();
-        return ResponseEntity.ok().build();
     }
 
     // MARK ALL UNEATEN

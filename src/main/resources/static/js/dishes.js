@@ -52,17 +52,45 @@ function renderDishes(dishes) {
 }
 
 function deleteDish(id) {
-    if (!confirm('Xoá món này nha?')) return;
+    if (!confirm('Bạn có chắc muốn xoá món này?')) return;
 
-    fetch(`${API_BASE}/${id}`, { method: 'DELETE' }).then(() => loadDishes());
-}
+    fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
+        .then((res) => {
+            if (!res.ok) throw new Error();
 
-function markAllEaten() {
-    fetch(`${API_BASE}/mark-all-eaten`, { method: 'PUT' }).then(() => loadDishes());
+            loadDishes();
+
+            showToast({
+                message: 'Món ăn đã được xoá thành công',
+                type: 'success',
+            });
+        })
+        .catch(() => {
+            showToast({
+                message: 'Không thể xoá món ăn',
+                type: 'error',
+            });
+        });
 }
 
 function markAllUneaten() {
-    fetch(`${API_BASE}/mark-all-uneaten`, { method: 'PUT' }).then(() => loadDishes());
+    fetch(`${API_BASE}/mark-all-uneaten`, { method: 'PUT' })
+        .then((res) => {
+            if (!res.ok) throw new Error();
+
+            loadDishes();
+
+            showToast({
+                message: 'Tất cả món ăn đã được đánh dấu là chưa ăn',
+                type: 'info',
+            });
+        })
+        .catch(() => {
+            showToast({
+                message: 'Không thể cập nhật trạng thái món ăn',
+                type: 'error',
+            });
+        });
 }
 
 // Search bar

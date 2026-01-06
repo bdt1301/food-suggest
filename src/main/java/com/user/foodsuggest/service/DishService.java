@@ -49,15 +49,23 @@ public class DishService {
 
 		// 3. Thiết lập mối quan hệ và lưu
 		dish.setDishType(persistentType);
+
 		return dishRepository.save(dish);
 	}
 
 	// UPDATE
+	@Transactional
 	public Dish update(Long id, Dish dish) {
 		Dish existing = findById(id);
+
+		DishType persistentType = dishTypeRepository
+				.findById(dish.getDishType().getId())
+				.orElseThrow(() -> new RuntimeException("DishType not found"));
+
 		existing.setDishName(dish.getDishName());
-		existing.setDishType(dish.getDishType());
+		existing.setDishType(persistentType);
 		existing.setHasEaten(dish.isHasEaten());
+
 		return dishRepository.save(existing);
 	}
 
@@ -112,21 +120,11 @@ public class DishService {
 		dishRepository.save(dish);
 	}
 
-	public void markAsEaten(Long id) {
+	public Dish markAsEaten(Long id) {
 		Dish dish = findById(id);
 		dish.setHasEaten(true);
 		dish.setActive(false);
-		dishRepository.save(dish);
-	}
-
-	// Đánh dấu tất cả món chưa ăn thành đã ăn
-	public void markAllAsEaten() {
-		List<Dish> dishes = dishRepository.findByHasEatenFalse();
-		for (Dish dish : dishes) {
-			dish.setHasEaten(true);
-			dish.setActive(false);
-		}
-		dishRepository.saveAll(dishes);
+		return dishRepository.save(dish);
 	}
 
 	// Đánh dấu tất cả món đã ăn thành chưa ăn
@@ -136,6 +134,25 @@ public class DishService {
 			dish.setHasEaten(false);
 		}
 		dishRepository.saveAll(dishes);
+	}
+
+	@Transactional
+	public boolean resetIfAllEatenByDishType(DishType type) {
+		List<Dish> dishes = dishRepository.findByDishType(type);
+
+		if (dishes.isEmpty())
+			return false;
+
+		boolean allEaten = dishes.stream()
+				.allMatch(Dish::isHasEaten);
+
+		if (allEaten) {
+			dishes.forEach(d -> d.setHasEaten(false));
+			dishRepository.saveAll(dishes);
+			return true;
+		}
+
+		return false;
 	}
 
 }
