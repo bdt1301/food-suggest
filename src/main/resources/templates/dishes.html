@@ -17,6 +17,9 @@
             referrerpolicy="no-referrer"
         />
 
+        <!-- Quill -->
+        <link href="https://cdn.jsdelivr.net/npm/quill/dist/quill.snow.css" rel="stylesheet" />
+
         <link rel="stylesheet" th:href="@{/css/style.css}" />
     </head>
 
@@ -67,7 +70,7 @@
                                 </th>
                                 <th data-sort class="sortable">
                                     <div class="th-content">
-                                        <span class="th-label">Đã ăn?</span>
+                                        <span class="th-label">Trạng thái</span>
                                         <span class="th-arrow"></span>
                                     </div>
                                 </th>
@@ -85,28 +88,20 @@
         </div>
 
         <div th:replace="fragments/footer :: footer"></div>
+        <div th:replace="fragments/toast :: toast"></div>
 
-        <!-- Dish Modal -->
-        <div class="modal fade" id="dishModal" tabindex="-1">
-            <div class="modal-dialog pt-4">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="dishModalTitle">Thêm món ăn</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-
-                    <div class="modal-body" id="dishModalBody">
-                        <!-- Form sẽ được load vào đây -->
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div th:replace="fragments/dish-form-modal :: dish-form-modal"></div>
+        <div th:replace="fragments/note-editor-modal :: note-editor-modal"></div>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+        <!-- Quill -->
+        <script src="https://cdn.jsdelivr.net/npm/quill/dist/quill.min.js"></script>
+
         <script th:src="@{/js/dishes.js}"></script>
         <script th:src="@{/js/dish-form.js}"></script>
+        <script th:src="@{/js/note-editor.js}"></script>
         <script th:src="@{/js/toast.js}"></script>
     </body>
 </html>

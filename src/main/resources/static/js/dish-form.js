@@ -90,7 +90,7 @@ function renderDishForm(dish, dishTypes) {
 
             <div class="d-flex justify-content-end gap-2">
                 <button type="button"
-                    class="btn btn-outline-secondary"
+                    class="btn btn-secondary"
                     data-bs-dismiss="modal">Huỷ</button>
 
                 <button type="submit"
@@ -139,8 +139,8 @@ function submitDish(event, id) {
             // Toast reset
             if (data.resetPerformed) {
                 showToast({
-                    message: 'Đã reset tất cả món trong loại này',
-                    type: 'warning',
+                    message: 'Đã ăn hết món trong loại này',
+                    type: 'info',
                 });
             }
         })
