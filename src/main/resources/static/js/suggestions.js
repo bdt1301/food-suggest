@@ -33,7 +33,7 @@ function renderLayout(dishTypes, groups) {
                                 <h5 class="card-title mb-0" id="label-${type.id}">${type.label}</h5>
                                 
                                 <div id="btn-handle-type-${type.id}" class="btn-group btn-group-sm">
-                                    <button class="btn btn-warning" onclick="enableEdit(${
+                                    <button class="btn btn-warning" onclick="enableEditType(${
                                         type.id
                                     })"><i class="fa-solid fa-pen"></i></button>
                                     <button class="btn btn-danger" onclick="deleteType(${
@@ -41,16 +41,16 @@ function renderLayout(dishTypes, groups) {
                                     })"><i class="fa-solid fa-trash"></i></button>
                                 </div>
 
-                                <form class="d-none align-items-center gap-1" id="form-${
+                                <form class="d-none d-flex align-items-center gap-1" id="form-${
                                     type.id
                                 }" onsubmit="return false;">
                                     <input type="text" id="input-${type.id}" value="${
-            type.label
-        }" class="form-control form-control-sm" required />
-                                    <button type="button" class="btn btn-sm btn-success" onclick="saveEdit(${
+                                    type.label
+                                }" class="form-control form-control-sm" required />
+                                    <button type="button" class="btn btn-sm btn-success" onclick="saveType(${
                                         type.id
                                     })"><i class="fa-solid fa-floppy-disk"></i></button>
-                                    <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit(${
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEditType(${
                                         type.id
                                     })"><i class="fa-solid fa-xmark"></i></button>
                                 </form>
@@ -78,8 +78,8 @@ function renderDishes(dishes, typeId) {
     return dishes
         .map(
             (dish) => `
-                <li class="list-group-item d-flex justify-content-between align-items-center" id="dish-item-${dish.id}">
-                    <span class="dish-name">${dish.dishName}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2" id="dish-item-${dish.id}">
+                    <span class="dish-name clickable" onclick="openNoteModal(${dish.id})">${dish.dishName}</span>
                     <div class="btn-group btn-group-sm">
                         <button type="button" onclick="eatDish(${dish.id}, ${typeId})" class="btn btn-success">Ăn</button>
                         <button type="button" onclick="randomDish(${dish.id}, ${typeId})" class="btn btn-warning">Đổi</button>
@@ -106,10 +106,10 @@ function addDish(typeId) {
             // 2. Tạo HTML cho dòng mới
             const ul = document.getElementById(`dish-group-${typeId}`);
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.className = 'list-group-item d-flex justify-content-between align-items-center px-0 py-2';
             li.id = `dish-item-${dish.id}`;
             li.innerHTML = `
-                <span class="dish-name">${dish.dishName}</span>
+                <span class="dish-name clickable" onclick="openNoteModal(${dish.id})">${dish.dishName}</span>
                 <div class="btn-group btn-group-sm">
                     <button type="button" onclick="eatDish(${dish.id}, ${typeId})" class="btn btn-success">Ăn</button>
                     <button type="button" onclick="randomDish(${dish.id}, ${typeId})" class="btn btn-warning">Đổi</button>
@@ -183,8 +183,8 @@ function eatDish(dishId, typeId) {
             // Toast reset
             if (data.resetPerformed) {
                 showToast({
-                    message: 'Đã reset tất cả món trong loại này',
-                    type: 'warning',
+                    message: 'Đã ăn hết món trong loại này',
+                    type: 'info',
                 });
             }
         })

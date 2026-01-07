@@ -1,5 +1,5 @@
 // Edit dish type
-function saveEdit(id) {
+function saveType(id) {
     const input = document.getElementById(`input-${id}`);
     const newLabel = input.value.trim();
 
@@ -21,7 +21,7 @@ function saveEdit(id) {
         .then((res) => res.json())
         .then((data) => {
             document.getElementById(`label-${id}`).innerText = data.label;
-            cancelEdit(id);
+            cancelEditType(id);
         })
         .catch((err) => {
             showToast({
@@ -32,16 +32,14 @@ function saveEdit(id) {
         });
 }
 
-function enableEdit(id) {
+function enableEditType(id) {
     document.getElementById('btn-handle-type-' + id).classList.add('d-none');
     document.getElementById('label-' + id).classList.add('d-none');
     document.getElementById('form-' + id).classList.remove('d-none');
-    document.getElementById('form-' + id).classList.add('d-flex');
 }
 
-function cancelEdit(id) {
+function cancelEditType(id) {
     document.getElementById('form-' + id).classList.add('d-none');
-    document.getElementById('form-' + id).classList.remove('d-flex');
     document.getElementById('btn-handle-type-' + id).classList.remove('d-none');
     document.getElementById('label-' + id).classList.remove('d-none');
 }

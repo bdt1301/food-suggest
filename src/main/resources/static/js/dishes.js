@@ -27,7 +27,9 @@ function renderDishes(dishes) {
     dishes.forEach((dish) => {
         tbody.innerHTML += `
             <tr>
-                <td>${dish.dishName}</td>
+                <td>
+                    <span class="dish-name clickable" onclick="openNoteModal(${dish.id})">${dish.dishName}</span>
+                </td>
                 <td class="d-none d-md-table-cell">
                     <span class="badge bg-secondary">${dish.dishType?.label ?? ''}</span>
                 </td>

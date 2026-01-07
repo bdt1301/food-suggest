@@ -16,6 +16,9 @@ public class Dish {
 	@JoinColumn(name = "dish_type_id", nullable = false)
 	private DishType dishType;
 
+	@Column(columnDefinition = "TEXT")
+	private String note;
+
 	private boolean hasEaten;
 	private boolean active = false;
 
@@ -41,6 +44,14 @@ public class Dish {
 
 	public void setDishType(DishType dishType) {
 		this.dishType = dishType;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
 	}
 
 	public boolean isHasEaten() {

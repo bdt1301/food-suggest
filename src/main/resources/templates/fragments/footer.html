@@ -1,18 +1,6 @@
-<footer th:fragment="footer" class="bg-light border-top mt-5">
-    <div class="container text-center py-3 text-muted">
+<footer th:fragment="footer" class="bg-dark border-secondary mt-5">
+    <div class="container text-center py-3 text-light">
         © <span th:text="${#dates.year(#dates.createNow())}"></span>
         Website gợi ý món ăn cho cá nhân
     </div>
-
-    <!-- Toast messages -->
-    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
-
-    <template id="toastTemplate">
-        <div class="toast align-items-center border-0 mb-2" role="alert">
-            <div class="d-flex">
-                <div class="toast-body"></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    </template>
 </footer>

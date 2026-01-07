@@ -30,6 +30,12 @@ public class DishRestController {
         return ResponseEntity.ok(dishes);
     }
 
+    // Get dish
+    @GetMapping("/{id}")
+    public ResponseEntity<Dish> getDishById(@PathVariable Long id) {
+        return ResponseEntity.ok(dishService.findById(id));
+    }
+
     // CREATE
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Dish dish) {
@@ -90,4 +96,14 @@ public class DishRestController {
                         "dish", dish,
                         "dishTypes", dishTypeService.findAll()));
     }
+
+    @PutMapping("/{id}/note")
+    public ResponseEntity<Void> updateNote(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        dishService.updateNote(id, body.get("note"));
+        return ResponseEntity.ok().build();
+    }
+
 }

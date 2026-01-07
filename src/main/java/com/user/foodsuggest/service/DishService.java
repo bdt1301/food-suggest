@@ -155,4 +155,12 @@ public class DishService {
 		return false;
 	}
 
+	@Transactional
+	public void updateNote(Long dishId, String note) {
+		Dish dish = dishRepository.findById(dishId)
+				.orElseThrow(() -> new RuntimeException("Dish not found: " + dishId));
+
+		dish.setNote(note);
+	}
+
 }
