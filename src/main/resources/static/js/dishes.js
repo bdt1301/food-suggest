@@ -1,13 +1,20 @@
 // Load DOM content
 const API_BASE = '/api/dishes';
+let currentPage = 0;
+const pageSize = 8;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadDishes();
 });
 
-function loadDishes() {
-    fetch(API_BASE)
+function loadDishes(page = 0) {
+    currentPage = page;
+    fetch(`${API_BASE}?page=${page}&size=${pageSize}`)
         .then((res) => res.json())
-        .then((dishes) => renderDishes(dishes));
+        .then((data) => {
+            renderDishes(data.content);
+            renderPagination(data.totalPages);
+        });
 }
 
 function renderDishes(dishes) {
@@ -51,6 +58,36 @@ function renderDishes(dishes) {
             </tr>
         `;
     });
+}
+
+function renderPagination(totalPages) {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+
+    // First
+    pagination.innerHTML += `
+        <li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
+            <button class="page-link" onclick="loadDishes(0)">First</button>
+        </li>
+    `;
+
+    // Page numbers
+    for (let i = 0; i < totalPages; i++) {
+        pagination.innerHTML += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <button class="page-link" onclick="loadDishes(${i})">
+                    ${i + 1}
+                </button>
+            </li>
+        `;
+    }
+
+    // Last
+    pagination.innerHTML += `
+        <li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
+            <button class="page-link" onclick="loadDishes(${totalPages - 1})">Last</button>
+        </li>
+    `;
 }
 
 function deleteDish(id) {

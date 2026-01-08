@@ -40,7 +40,6 @@ function openNoteModal(dishId) {
 function switchToEdit() {
     document.getElementById('noteView').classList.add('d-none');
     document.getElementById('noteEdit').classList.remove('d-none');
-
     document.getElementById('viewActions').classList.add('d-none');
     document.getElementById('editActions').classList.remove('d-none');
 
@@ -55,7 +54,6 @@ function cancelEditNote() {
 function switchToView() {
     document.getElementById('noteView').classList.remove('d-none');
     document.getElementById('noteEdit').classList.add('d-none');
-
     document.getElementById('viewActions').classList.remove('d-none');
     document.getElementById('editActions').classList.add('d-none');
 }
@@ -71,7 +69,14 @@ function saveNote() {
         .then((res) => {
             if (!res.ok) throw new Error();
 
-            bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+            originalNoteHtml = noteHtml;
+
+            // cập nhật VIEW
+            document.getElementById('noteViewContent').innerHTML = noteHtml.trim()
+                ? noteHtml
+                : '<span class="text-muted fst-italic">Chưa có ghi chú</span>';
+
+            switchToView();
 
             showToast({
                 message: 'Đã lưu ghi chú thành công',

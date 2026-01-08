@@ -3,6 +3,9 @@ package com.user.foodsuggest.service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +29,13 @@ public class DishService {
 	}
 
 	// READ
-	public List<Dish> findAll() {
-		return dishRepository.findAll(Sort.by("id"));
+	public Page<Dish> findAll(Pageable pageable) {
+		return dishRepository.findAll(PageRequest.of(
+				pageable.getPageNumber(),
+				pageable.getPageSize(),
+				Sort.by("id").ascending()));
 	}
-
+	
 	public Dish findById(Long id) {
 		return dishRepository.findById(id).orElseThrow(() -> new RuntimeException("Dish not found"));
 	}
