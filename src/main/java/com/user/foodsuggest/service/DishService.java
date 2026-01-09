@@ -35,9 +35,16 @@ public class DishService {
 				pageable.getPageSize(),
 				Sort.by("id").ascending()));
 	}
-	
+
 	public Dish findById(Long id) {
 		return dishRepository.findById(id).orElseThrow(() -> new RuntimeException("Dish not found"));
+	}
+
+	public Page<Dish> search(String keyword, Pageable pageable) {
+		if (keyword == null || keyword.isBlank()) {
+			return dishRepository.findAll(pageable);
+		}
+		return dishRepository.searchByName(keyword, pageable);
 	}
 
 	// CREATE
