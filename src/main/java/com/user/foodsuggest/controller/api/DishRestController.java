@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +30,18 @@ public class DishRestController {
     @GetMapping
     public ResponseEntity<Page<Dish>> getAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<Dish> dishes = dishService.findAll(PageRequest.of(page, size));
-        return ResponseEntity.ok(dishes);
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "dishName") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+        Sort sortObj = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sort).descending()
+                : Sort.by(sort).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        return ResponseEntity.ok(
+                dishService.search(keyword, pageable));
     }
 
     // Get dish

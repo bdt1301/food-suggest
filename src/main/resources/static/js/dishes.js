@@ -1,7 +1,11 @@
 // Load DOM content
 const API_BASE = '/api/dishes';
-let currentPage = 0;
 const pageSize = 8;
+
+let currentPage = 0;
+let currentKeyword = '';
+let currentSort = 'dishName';
+let currentDirection = 'asc';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDishes();
@@ -9,7 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadDishes(page = 0) {
     currentPage = page;
-    fetch(`${API_BASE}?page=${page}&size=${pageSize}`)
+
+    const params = new URLSearchParams({
+        page,
+        size: pageSize,
+        keyword: currentKeyword,
+        sort: currentSort,
+        direction: currentDirection,
+    });
+
+    fetch(`${API_BASE}?${params}`)
         .then((res) => res.json())
         .then((data) => {
             renderDishes(data.content);
@@ -132,73 +145,41 @@ function markAllUneaten() {
         });
 }
 
-// Search bar
-function removeVietnameseTones(str) {
-    return str
-        .normalize('NFD') // tách dấu
-        .replace(/[\u0300-\u036f]/g, '') // xoá dấu
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
+// Search
+function onSearchInput() {
+    currentKeyword = document.getElementById('search-name').value;
+    loadDishes(0);
 }
 
-function searchName() {
-    const input = document.getElementById('search-name');
-    const keyword = removeVietnameseTones(input.value.toLowerCase());
+// Sort
+document.querySelectorAll('th.sortable').forEach((header) => {
+    header.addEventListener('click', () => {
+        const field = header.dataset.field;
 
-    const table = document.getElementById('dishesTableBody');
-    const trs = table.getElementsByTagName('tr');
-
-    for (let i = 0; i < trs.length; i++) {
-        const td = trs[i].getElementsByTagName('td')[0];
-        if (!td) continue;
-
-        const text = removeVietnameseTones((td.textContent || td.innerText).toLowerCase());
-
-        if (text.includes(keyword)) {
-            trs[i].style.display = '';
+        if (currentSort === field) {
+            currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            trs[i].style.display = 'none';
+            currentSort = field;
+            currentDirection = 'asc';
         }
-    }
-}
 
-// Sort table
-document.addEventListener('DOMContentLoaded', () => {
-    const table = document.querySelector('table');
-    const headers = table.querySelectorAll('th.sortable');
-    const tbody = table.querySelector('tbody');
-    const sortState = {};
-
-    headers.forEach((header, colIndex) => {
-        sortState[colIndex] = 'asc';
-
-        header.addEventListener('click', () => {
-            const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.children.length > 1);
-
-            rows.sort((a, b) => {
-                const textA = a.children[colIndex].innerText.trim();
-                const textB = b.children[colIndex].innerText.trim();
-                return sortState[colIndex] === 'asc'
-                    ? textA.localeCompare(textB, 'vi')
-                    : textB.localeCompare(textA, 'vi');
-            });
-
-            // Đặt mũi tên cho header đang click
-            headers.forEach((h, i) => {
-                const arrow = h.querySelector('.th-arrow');
-                if (i === colIndex) {
-                    arrow.innerHTML =
-                        sortState[colIndex] === 'asc'
-                            ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
-                            : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
-                } else {
-                    arrow.innerHTML = ''; // xóa mũi tên cột khác
-                }
-            });
-
-            sortState[colIndex] = sortState[colIndex] === 'asc' ? 'desc' : 'asc';
-
-            rows.forEach((row) => tbody.appendChild(row));
-        });
+        loadDishes(0);
+        updateSortIcons();
     });
 });
+
+function updateSortIcons() {
+    document.querySelectorAll('th.sortable').forEach((th) => {
+        const arrow = th.querySelector('.th-arrow');
+        if (!arrow) return;
+
+        if (th.dataset.field === currentSort) {
+            arrow.innerHTML =
+                currentDirection === 'asc'
+                    ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
+                    : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
+        } else {
+            arrow.innerHTML = '';
+        }
+    });
+}
