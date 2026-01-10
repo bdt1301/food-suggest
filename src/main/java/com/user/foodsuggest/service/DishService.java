@@ -44,7 +44,7 @@ public class DishService {
 		if (keyword == null || keyword.isBlank()) {
 			return dishRepository.findAll(pageable);
 		}
-		return dishRepository.searchByName(keyword, pageable);
+		return dishRepository.findByDishNameContainingIgnoreCase(keyword.trim(), pageable);
 	}
 
 	// CREATE

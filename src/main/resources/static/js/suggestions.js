@@ -13,13 +13,13 @@ function loadPageData() {
         })
         .catch((err) => {
             console.error(err);
-            document.getElementById('dish-type-container').innerHTML = 'Lỗi load dữ liệu!';
+            document.getElementById('dishTypeContainer').innerHTML = 'Lỗi load dữ liệu!';
         });
 }
 
 // 2. Hàm vẽ giao diện
 function renderLayout(dishTypes, groups) {
-    const container = document.getElementById('dish-type-container');
+    const container = document.getElementById('dishTypeContainer');
     container.innerHTML = ''; // Xóa chữ "Đang tải"
 
     dishTypes.forEach((type) => {

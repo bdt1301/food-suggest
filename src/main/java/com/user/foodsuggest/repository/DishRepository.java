@@ -5,9 +5,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
 import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.model.DishType;
 
@@ -22,10 +19,6 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
 
 	List<Dish> findByDishTypeAndHasEatenFalseAndActiveFalse(DishType dishType);
 
-	@Query("""
-			    SELECT d FROM Dish d
-			    WHERE (:keyword IS NULL OR :keyword = ''
-			        OR lower(d.dishName) LIKE lower(concat('%', :keyword, '%')))
-			""")
-	Page<Dish> searchByName(String keyword, Pageable pageable);
+	Page<Dish> findByDishNameContainingIgnoreCase(String keyword, Pageable pageable);
+
 }
