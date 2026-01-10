@@ -103,6 +103,45 @@ function renderPagination(totalPages) {
     `;
 }
 
+// Search
+function onSearchInput() {
+    currentKeyword = document.getElementById('searchName').value;
+    loadDishes(0);
+}
+
+// Sort
+document.querySelectorAll('th.sortable').forEach((header) => {
+    header.addEventListener('click', () => {
+        const field = header.dataset.field;
+
+        if (currentSort === field) {
+            currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort = field;
+            currentDirection = 'asc';
+        }
+
+        loadDishes(0);
+        updateSortIcons();
+    });
+});
+
+function updateSortIcons() {
+    document.querySelectorAll('th.sortable').forEach((th) => {
+        const arrow = th.querySelector('.th-arrow');
+        if (!arrow) return;
+
+        if (th.dataset.field === currentSort) {
+            arrow.innerHTML =
+                currentDirection === 'asc'
+                    ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
+                    : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
+        } else {
+            arrow.innerHTML = '';
+        }
+    });
+}
+
 function deleteDish(id) {
     if (!confirm('Bạn có chắc muốn xoá món này?')) return;
 
@@ -143,43 +182,4 @@ function markAllUneaten() {
                 type: 'error',
             });
         });
-}
-
-// Search
-function onSearchInput() {
-    currentKeyword = document.getElementById('search-name').value;
-    loadDishes(0);
-}
-
-// Sort
-document.querySelectorAll('th.sortable').forEach((header) => {
-    header.addEventListener('click', () => {
-        const field = header.dataset.field;
-
-        if (currentSort === field) {
-            currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            currentSort = field;
-            currentDirection = 'asc';
-        }
-
-        loadDishes(0);
-        updateSortIcons();
-    });
-});
-
-function updateSortIcons() {
-    document.querySelectorAll('th.sortable').forEach((th) => {
-        const arrow = th.querySelector('.th-arrow');
-        if (!arrow) return;
-
-        if (th.dataset.field === currentSort) {
-            arrow.innerHTML =
-                currentDirection === 'asc'
-                    ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
-                    : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
-        } else {
-            arrow.innerHTML = '';
-        }
-    });
 }

@@ -22,6 +22,7 @@ public class Dish {
 	private boolean hasEaten;
 	private boolean active = false;
 
+	// Getter & Setter
 	public Long getId() {
 		return id;
 	}
