@@ -22,6 +22,10 @@ public class Dish {
 	private boolean hasEaten;
 	private boolean active = false;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private User owner;
+
 	// Getter & Setter
 	public Long getId() {
 		return id;
@@ -70,4 +74,13 @@ public class Dish {
 	public void setActive(boolean active) {
 		this.active = active;
 	}
+
+	public User getOwner() {
+		return owner;
+	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
+	}
+	
 }

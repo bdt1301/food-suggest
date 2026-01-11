@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Login</title>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                height: 100vh;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .card {
+                max-width: 400px;
+                width: 100%;
+                margin: 0 12px;
+                border-radius: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h4 class="text-center mb-4">Đăng nhập</h4>
+
+                <!-- Login form -->
+                <form id="form-login" th:action="@{/login}" method="post">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            class="form-control"
+                            data-rule="required"
+                            placeholder="Nhập username"
+                        />
+                        <span class="form-message text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control"
+                            data-rule="required|min:6"
+                            placeholder="Nhập mật khẩu"
+                        />
+                        <span class="form-message text-danger"></span>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-2">Login</button>
+                </form>
+
+                <hr />
+
+                <!-- Register -->
+                <div class="d-flex gap-1 align-items-center justify-content-center">
+                    <span>Chưa có tài khoản?</span>
+                    <button class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        Đăng ký
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div class="modal fade" id="registerModal" tabindex="-1">
+            <div class="modal-dialog pt-4">
+                <div class="modal-content">
+                    <form id="form-register" th:action="@{/register}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Đăng ký tài khoản</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Username</label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    class="form-control"
+                                    data-rule="required|min:3"
+                                    placeholder="Nhập username"
+                                />
+                                <span class="form-message text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    id="register-password"
+                                    class="form-control"
+                                    data-rule="required|min:6"
+                                    placeholder="Nhập mật khẩu"
+                                />
+                                <span class="form-message text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    class="form-control"
+                                    data-rule="required|match:#register-password"
+                                    placeholder="Nhập lại mật khẩu"
+                                />
+                                <span class="form-message text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Huỷ</button>
+                            <button class="btn btn-success">Đăng ký</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="fragments/toast :: toast"></div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script th:src="@{/js/validator.js}"></script>
+        <script th:src="@{/js/toast.js}"></script>
+
+        <!-- Validator -->
+        <script>
+            // Login form
+            const loginValidator = new Validator({
+                form: '#form-login',
+                formGroupSelector: '.form-group',
+                errorSelector: '.form-message',
+            });
+
+            // Register form
+            const registerValidator = new Validator({
+                form: '#form-register',
+                formGroupSelector: '.form-group',
+                errorSelector: '.form-message',
+            });
+        </script>
+
+        <!-- Login & Register -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', () => {
+                /* Lấy param từ URL */
+                const urlParams = new URLSearchParams(window.location.search);
+
+                if (urlParams.has('error')) {
+                    showToast({ message: 'Sai username hoặc password', type: 'error' });
+                }
+
+                if (urlParams.has('logout')) {
+                    showToast({ message: 'Đã đăng xuất thành công', type: 'success' });
+                }
+
+                // Lấy flash từ Thymeleaf
+                const successMsg = /*[[${success}]]*/ '';
+                const errorMsg = /*[[${error}]]*/ '';
+
+                if (successMsg) {
+                    showToast({ message: successMsg, type: 'success' });
+                }
+
+                if (errorMsg) {
+                    showToast({ message: errorMsg, type: 'error' });
+                }
+            });
+        </script>
+    </body>
+</html>

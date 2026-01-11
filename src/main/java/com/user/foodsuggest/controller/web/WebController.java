@@ -14,4 +14,10 @@ public class WebController {
     public String dishes() {
         return "dishes";
     }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
 }

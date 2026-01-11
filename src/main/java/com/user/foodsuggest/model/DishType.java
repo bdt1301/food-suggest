@@ -22,6 +22,10 @@ public class DishType {
 	@OneToMany(mappedBy = "dishType", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Dish> dishes = new ArrayList<>();
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
 	// Getter & Setter
 	public Long getId() {
 		return id;
@@ -45,6 +49,14 @@ public class DishType {
 
 	public void setDishes(List<Dish> dishes) {
 		this.dishes = dishes;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 }

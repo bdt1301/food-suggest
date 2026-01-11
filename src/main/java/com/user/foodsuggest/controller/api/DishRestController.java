@@ -34,6 +34,7 @@ public class DishRestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "dishName") String sort,
             @RequestParam(defaultValue = "asc") String direction) {
+                
         Sort sortObj = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sort).descending()
                 : Sort.by(sort).ascending();
@@ -47,7 +48,7 @@ public class DishRestController {
     // Get dish
     @GetMapping("/{id}")
     public ResponseEntity<Dish> getDishById(@PathVariable Long id) {
-        return ResponseEntity.ok(dishService.findById(id));
+        return ResponseEntity.ok(dishService.findOwnedDish(id));
     }
 
     // CREATE
@@ -102,7 +103,7 @@ public class DishRestController {
             @RequestParam(required = false) Long id) {
 
         Dish dish = (id != null)
-                ? dishService.findById(id)
+                ? dishService.findOwnedDish(id)
                 : new Dish();
 
         return ResponseEntity.ok(

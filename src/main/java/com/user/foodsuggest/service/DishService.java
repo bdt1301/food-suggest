@@ -4,13 +4,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.model.DishType;
+import com.user.foodsuggest.model.User;
 import com.user.foodsuggest.repository.DishRepository;
 import com.user.foodsuggest.repository.DishTypeRepository;
 
@@ -22,46 +21,49 @@ public class DishService {
 
 	private final DishRepository dishRepository;
 	private final DishTypeRepository dishTypeRepository;
+	private final UserService userService;
 
-	public DishService(DishRepository dishRepository, DishTypeRepository dishTypeRepository) {
+	public DishService(DishRepository dishRepository, DishTypeRepository dishTypeRepository, UserService userService) {
 		this.dishRepository = dishRepository;
 		this.dishTypeRepository = dishTypeRepository;
+		this.userService = userService;
 	}
 
 	// READ
-	public Page<Dish> findAll(Pageable pageable) {
-		return dishRepository.findAll(PageRequest.of(
-				pageable.getPageNumber(),
-				pageable.getPageSize(),
-				Sort.by("id").ascending()));
+	public Dish findOwnedDish(Long id) {
+		User user = userService.getCurrentUser();
+		return dishRepository.findByIdAndOwner(id, user)
+				.orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 	}
 
-	public Dish findById(Long id) {
-		return dishRepository.findById(id).orElseThrow(() -> new RuntimeException("Dish not found"));
-	}
-
+	// SEARCH
 	public Page<Dish> search(String keyword, Pageable pageable) {
+		User user = userService.getCurrentUser();
+
 		if (keyword == null || keyword.isBlank()) {
-			return dishRepository.findAll(pageable);
+			return dishRepository.findByOwner(user, pageable);
 		}
-		return dishRepository.findByDishNameContainingIgnoreCase(keyword.trim(), pageable);
+
+		return dishRepository
+				.findByOwnerAndDishNameContainingIgnoreCase(
+						user, keyword.trim(), pageable);
 	}
 
 	// CREATE
 	@Transactional
 	public Dish create(Dish dish) {
-		// 1. Kiểm tra xem người dùng có chọn loại món không
 		if (dish.getDishType() == null || dish.getDishType().getId() == null) {
-			throw new IllegalArgumentException("Loại món là bắt buộc");
+			throw new IllegalArgumentException("DishType is required");
 		}
 
-		// 2. Tìm kiếm DishType thực sự từ Database
-		Long typeId = dish.getDishType().getId();
-		DishType persistentType = dishTypeRepository.findById(typeId)
-				.orElseThrow(() -> new RuntimeException("Loại món ID " + typeId + " không tồn tại"));
+		DishType persistentType = dishTypeRepository
+				.findById(dish.getDishType().getId())
+				.orElseThrow(() -> new RuntimeException("DishType not found"));
 
-		// 3. Thiết lập mối quan hệ và lưu
+		User currentUser = userService.getCurrentUser();
+
 		dish.setDishType(persistentType);
+		dish.setOwner(currentUser);
 
 		return dishRepository.save(dish);
 	}
@@ -69,36 +71,42 @@ public class DishService {
 	// UPDATE
 	@Transactional
 	public Dish update(Long id, Dish dish) {
-		Dish existing = findById(id);
+		Dish existing = findOwnedDish(id);
 
-		DishType persistentType = dishTypeRepository
+		DishType type = dishTypeRepository
 				.findById(dish.getDishType().getId())
-				.orElseThrow(() -> new RuntimeException("DishType not found"));
+				.orElseThrow();
 
 		existing.setDishName(dish.getDishName());
-		existing.setDishType(persistentType);
+		existing.setDishType(type);
 		existing.setHasEaten(dish.isHasEaten());
 
-		return dishRepository.save(existing);
+		return existing;
 	}
 
 	// DELETE
 	public void delete(Long id) {
-		dishRepository.deleteById(id);
+		Dish existing = findOwnedDish(id);
+		dishRepository.delete(existing);
 	}
 
 	public Map<Long, List<Dish>> getSuggestingDishes() {
-		return dishRepository.findByHasEatenFalseAndActiveTrue()
+		User user = userService.getCurrentUser();
+
+		return dishRepository
+				.findByOwnerAndHasEatenFalseAndActiveTrue(user)
 				.stream()
 				.collect(Collectors.groupingBy(
-						dish -> dish.getDishType().getId()));
+						d -> d.getDishType().getId()));
 	}
 
 	public Dish addRandomDish(Long dishTypeId) {
+		User user = userService.getCurrentUser();
+
 		DishType type = dishTypeRepository.findById(dishTypeId)
 				.orElseThrow(() -> new EntityNotFoundException("DishType not found"));
 
-		List<Dish> pool = dishRepository.findByDishTypeAndHasEatenFalseAndActiveFalse(type);
+		List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(user, type);
 
 		if (pool.isEmpty())
 			return null;
@@ -110,10 +118,12 @@ public class DishService {
 	}
 
 	public Dish randomDish(Long id) {
-		Dish current = findById(id);
+		User user = userService.getCurrentUser();
+
+		Dish current = findOwnedDish(id);
 		DishType type = current.getDishType();
 
-		List<Dish> pool = dishRepository.findByDishTypeAndHasEatenFalseAndActiveFalse(type);
+		List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(user, type);
 
 		if (pool.isEmpty())
 			return null;
@@ -128,13 +138,13 @@ public class DishService {
 	}
 
 	public void remove(Long id) {
-		Dish dish = findById(id);
+		Dish dish = findOwnedDish(id);
 		dish.setActive(false);
 		dishRepository.save(dish);
 	}
 
 	public Dish markAsEaten(Long id) {
-		Dish dish = findById(id);
+		Dish dish = findOwnedDish(id);
 		dish.setHasEaten(true);
 		dish.setActive(false);
 		return dishRepository.save(dish);
@@ -142,7 +152,9 @@ public class DishService {
 
 	// Đánh dấu tất cả món đã ăn thành chưa ăn
 	public void markAllAsUneaten() {
-		List<Dish> dishes = dishRepository.findByHasEatenTrue();
+		User user = userService.getCurrentUser();
+
+		List<Dish> dishes = dishRepository.findByOwnerAndHasEatenTrue(user);
 		for (Dish dish : dishes) {
 			dish.setHasEaten(false);
 		}
@@ -151,7 +163,9 @@ public class DishService {
 
 	@Transactional
 	public boolean resetIfAllEatenByDishType(DishType type) {
-		List<Dish> dishes = dishRepository.findByDishType(type);
+		User user = userService.getCurrentUser();
+
+		List<Dish> dishes = dishRepository.findByOwnerAndDishType(user, type);
 
 		if (dishes.isEmpty())
 			return false;
@@ -170,9 +184,7 @@ public class DishService {
 
 	@Transactional
 	public void updateNote(Long dishId, String note) {
-		Dish dish = dishRepository.findById(dishId)
-				.orElseThrow(() -> new RuntimeException("Dish not found: " + dishId));
-
+		Dish dish = findOwnedDish(dishId);
 		dish.setNote(note);
 	}
 

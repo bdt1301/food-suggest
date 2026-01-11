@@ -1,67 +1,83 @@
-// package com.user.foodsuggest.model;
+package com.user.foodsuggest.model;
 
-// import jakarta.persistence.*;
-// import java.util.ArrayList;
-// import java.util.List;
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-// @Entity
-// @Table(name = "users")
-// public class User {
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Long id;
+@Entity
+@Table(name = "users")
+public class User {
 
-//     @Column(nullable = false, unique = true)
-//     private String username;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-//     @Column(nullable = false)
-//     private String password;
+    @Column(nullable = false, unique = true)
+    private String username;
 
-//     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-//     private List<Dish> dishes = new ArrayList<>();
+    @Column(nullable = false)
+    private String password;
 
-//     @OneToMany(mappedBy = "author")
-//     private List<CommunityDish> communityDishes = new ArrayList<>();
+    @Column(nullable = false)
+    private String role;
 
-//     // Getter & Setter
-//     public Long getId() {
-//         return id;
-//     }
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Dish> dishes = new ArrayList<>();
 
-//     public void setId(Long id) {
-//         this.id = id;
-//     }
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DishType> dishTypes = new ArrayList<>();
 
-//     public String getUsername() {
-//         return username;
-//     }
+    // Getter & Setter
+    public Long getId() {
+        return id;
+    }
 
-//     public void setUsername(String username) {
-//         this.username = username;
-//     }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-//     public String getPassword() {
-//         return password;
-//     }
+    public String getUsername() {
+        return username;
+    }
 
-//     public void setPassword(String password) {
-//         this.password = password;
-//     }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-//     public List<Dish> getDishes() {
-//         return dishes;
-//     }
+    public String getPassword() {
+        return password;
+    }
 
-//     public void setDishes(List<Dish> dishes) {
-//         this.dishes = dishes;
-//     }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-//     public List<CommunityDish> getCommunityDishes() {
-//         return communityDishes;
-//     }
+    public String getRole() {
+        return role;
+    }
 
-//     public void setCommunityDishes(List<CommunityDish> communityDishes) {
-//         this.communityDishes = communityDishes;
-//     }
-// }
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public List<Dish> getDishes() {
+        return dishes;
+    }
+
+    public void setDishes(List<Dish> dishes) {
+        this.dishes = dishes;
+    }
+
+    public List<DishType> getDishTypes() {
+        return dishTypes;
+    }
+
+    public void setDishTypes(List<DishType> dishTypes) {
+        this.dishTypes = dishTypes;
+    }
+
+}

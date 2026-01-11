@@ -2,66 +2,71 @@ package com.user.foodsuggest.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.user.foodsuggest.model.DishType;
+import com.user.foodsuggest.model.User;
 import com.user.foodsuggest.repository.DishTypeRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
 public class DishTypeService {
 
     private final DishTypeRepository dishTypeRepository;
+    private final UserService userService;
 
-    public DishTypeService(DishTypeRepository dishTypeRepository) {
+    public DishTypeService(DishTypeRepository dishTypeRepository, UserService userService) {
         this.dishTypeRepository = dishTypeRepository;
+        this.userService = userService;
     }
 
     // ===== READ =====
     public List<DishType> findAll() {
-        return dishTypeRepository.findAll(Sort.by("id"));
-    }
-
-    public DishType findById(Long id) {
-        return dishTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("DishType not found: " + id));
+        User user = userService.getCurrentUser();
+        return dishTypeRepository.findByUser(user);
     }
 
     // ===== CREATE =====
-    public DishType create(DishType dishType) {
-        return dishTypeRepository.save(dishType);
-    }
-
-    // ===== UPDATE =====
-    @Transactional
-    public DishType update(Long id, String label) {
-        DishType type = dishTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("DishType not found: " + id));
-        type.setLabel(label);
-        return type;
-    }
-
-    // ===== DELETE =====
-    public void delete(Long id) {
-        dishTypeRepository.deleteById(id);
-    }
-
     @Transactional
     public DishType createIfNotExists(String label) {
+        User user = userService.getCurrentUser();
         String normalized = label.trim();
 
         if (normalized.isEmpty()) {
             throw new RuntimeException("Tên loại món không hợp lệ");
         }
 
-        return dishTypeRepository.findByLabelIgnoreCase(normalized)
+        return dishTypeRepository
+                .findByLabelIgnoreCaseAndUser(normalized, user)
                 .orElseGet(() -> {
                     DishType type = new DishType();
                     type.setLabel(normalized);
+                    type.setUser(user);
                     return dishTypeRepository.save(type);
                 });
     }
+
+    // ===== UPDATE =====
+    @Transactional
+    public DishType update(Long id, String label) {
+        User user = userService.getCurrentUser();
+
+        DishType type = dishTypeRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new RuntimeException("Không có quyền sửa DishType này"));
+
+        type.setLabel(label);
+        return type;
+    }
+
+    // ===== DELETE =====
+    public void delete(Long id) {
+        User user = userService.getCurrentUser();
+
+        DishType type = dishTypeRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new RuntimeException("Không có quyền xóa DishType này"));
+
+        dishTypeRepository.delete(type);
+    }
+
 }
