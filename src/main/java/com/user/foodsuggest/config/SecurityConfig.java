@@ -10,22 +10,21 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.user.foodsuggest.service.CustomUserDetailsService;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
-
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**")
+                        .requestMatchers("/login", "/register", "/health", "/css/**", "/js/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

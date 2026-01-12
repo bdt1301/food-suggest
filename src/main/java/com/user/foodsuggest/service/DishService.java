@@ -15,19 +15,15 @@ import com.user.foodsuggest.repository.DishTypeRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class DishService {
 
 	private final DishRepository dishRepository;
 	private final DishTypeRepository dishTypeRepository;
 	private final UserService userService;
-
-	public DishService(DishRepository dishRepository, DishTypeRepository dishTypeRepository, UserService userService) {
-		this.dishRepository = dishRepository;
-		this.dishTypeRepository = dishTypeRepository;
-		this.userService = userService;
-	}
 
 	// READ
 	public Dish findOwnedDish(Long id) {

@@ -14,17 +14,15 @@ import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.service.DishService;
 import com.user.foodsuggest.service.DishTypeService;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/dishes")
 public class DishRestController {
 
     private final DishService dishService;
     private final DishTypeService dishTypeService;
-
-    public DishRestController(DishService dishService, DishTypeService dishTypeService) {
-        this.dishService = dishService;
-        this.dishTypeService = dishTypeService;
-    }
 
     // Get all dishes
     @GetMapping

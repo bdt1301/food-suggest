@@ -108,6 +108,7 @@ function submitDish(event, id) {
     const payload = {
         dishName: document.getElementById('dishName').value,
         hasEaten: document.getElementById('hasEaten').checked,
+        active: false,
         dishType: {
             id: document.getElementById('dishTypeSelect').value,
         },

@@ -10,17 +10,15 @@ import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.service.DishService;
 import com.user.foodsuggest.service.DishTypeService;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/suggestions")
 public class SuggestionRestController {
 
 	private final DishService dishService;
 	private final DishTypeService dishTypeService;
-
-	public SuggestionRestController(DishService dishService, DishTypeService dishTypeService) {
-		this.dishService = dishService;
-		this.dishTypeService = dishTypeService;
-	}
 
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getAllData() {

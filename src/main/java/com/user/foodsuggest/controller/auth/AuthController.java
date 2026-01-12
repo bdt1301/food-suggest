@@ -7,14 +7,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.user.foodsuggest.service.UserService;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Controller
 public class AuthController {
 
     private final UserService userService;
-
-    public AuthController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping("/register")
     public String register(@RequestParam String username,

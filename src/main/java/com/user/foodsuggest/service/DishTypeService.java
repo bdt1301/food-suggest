@@ -9,17 +9,14 @@ import com.user.foodsuggest.model.User;
 import com.user.foodsuggest.repository.DishTypeRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class DishTypeService {
 
     private final DishTypeRepository dishTypeRepository;
     private final UserService userService;
-
-    public DishTypeService(DishTypeRepository dishTypeRepository, UserService userService) {
-        this.dishTypeRepository = dishTypeRepository;
-        this.userService = userService;
-    }
 
     // ===== READ =====
     public List<DishType> findAll() {

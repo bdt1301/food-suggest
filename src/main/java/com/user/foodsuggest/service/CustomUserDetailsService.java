@@ -8,14 +8,13 @@ import org.springframework.stereotype.Service;
 import com.user.foodsuggest.model.User;
 import com.user.foodsuggest.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username)
@@ -30,5 +29,5 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .roles(user.getRole().replace("ROLE_", ""))
                 .build();
     }
-    
+
 }
