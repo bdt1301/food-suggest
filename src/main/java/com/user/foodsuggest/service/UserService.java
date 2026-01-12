@@ -5,6 +5,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.user.foodsuggest.dto.ChangePasswordDTO;
+import com.user.foodsuggest.dto.RegisterDTO;
 import com.user.foodsuggest.model.User;
 import com.user.foodsuggest.repository.UserRepository;
 
@@ -24,26 +26,47 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public String registerUser(String username, String password, String confirmPassword) {
-        // Check trùng username
-        if (userRepository.findByUsername(username).isPresent()) {
-            return "Username đã tồn tại";
+    public void registerUser(RegisterDTO registerDTO) {
+        if (userRepository.findByUsername(registerDTO.getUsername()).isPresent()) {
+            throw new RuntimeException("Username đã tồn tại");
         }
 
-        // Check confirm password
-        if (!password.equals(confirmPassword)) {
-            return "Password và Confirm Password không khớp";
+        if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
+            throw new RuntimeException("Password và Confirm Password không khớp");
         }
 
-        // Tạo user mới
         User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setUsername(registerDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setRole("ROLE_USER");
 
         userRepository.save(user);
+    }
 
-        return null; // null = thành công
+    public void changePassword(String username, ChangePasswordDTO request) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+        }
+
+        if (passwordEncoder.matches(
+                request.getNewPassword(),
+                user.getPassword())) {
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu cũ");
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
 }

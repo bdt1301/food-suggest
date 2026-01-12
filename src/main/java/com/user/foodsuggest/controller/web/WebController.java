@@ -20,4 +20,9 @@ public class WebController {
         return "login";
     }
 
+    @GetMapping("/configuration")
+    public String configuration() {
+        return "configuration";
+    }
+
 }

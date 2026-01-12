@@ -24,7 +24,7 @@
     </head>
 
     <body class="bg-light">
-        <div th:replace="fragments/header :: header"></div>
+        <div th:replace="~{fragments/header :: header}"></div>
 
         <div class="container py-4 flex-grow-1">
             <!-- Tiêu đề -->
@@ -90,11 +90,11 @@
             </div>
         </div>
 
-        <div th:replace="fragments/footer :: footer"></div>
-        <div th:replace="fragments/toast :: toast"></div>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+        <div th:replace="~{fragments/toast :: toast}"></div>
 
-        <div th:replace="fragments/dish-form-modal :: dish-form-modal"></div>
-        <div th:replace="fragments/note-editor-modal :: note-editor-modal"></div>
+        <div th:replace="~{fragments/dish-form-modal :: dish-form-modal}"></div>
+        <div th:replace="~{fragments/note-editor-modal :: note-editor-modal}"></div>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

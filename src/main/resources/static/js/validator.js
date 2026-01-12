@@ -50,7 +50,14 @@ class Validator {
             } else if (rule.startsWith('match:')) {
                 const targetSelector = rule.split(':')[1];
                 const targetElement = this.formElement.querySelector(targetSelector);
-                errorMessage = inputValue === targetElement.value ? undefined : 'Giá trị nhập vào không khớp';
+                errorMessage = inputValue === targetElement.value ? undefined : 'Xác nhận mật khẩu không khớp';
+            } else if (rule.startsWith('different:')) {
+                const targetSelector = rule.split(':')[1];
+                const targetElement = this.formElement.querySelector(targetSelector);
+                errorMessage =
+                    inputValue && inputValue !== targetElement.value
+                        ? undefined
+                        : 'Mật khẩu mới phải khác mật khẩu hiện tại';
             }
             if (errorMessage) break;
         }
