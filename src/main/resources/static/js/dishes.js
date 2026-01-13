@@ -35,7 +35,7 @@ function renderDishes(dishes) {
     if (dishes.length === 0) {
         container.innerHTML = `
             <div class="col-12 text-center text-muted py-4">
-                Chưa có món ăn nào!
+                Chưa có món ăn nào
             </div>`;
         return;
     }

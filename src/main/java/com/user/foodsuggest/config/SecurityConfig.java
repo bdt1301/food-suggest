@@ -17,31 +17,46 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
+        private final CustomUserDetailsService userDetailsService;
 
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/health", "/css/**", "/js/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout"))
-                .userDetailsService(userDetailsService);
+        @Bean
+        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
 
-        return http.build();
-    }
+                                // Remember-me
+                                .rememberMe(rm -> rm
+                                                .key("foodsuggestrmkey") // key mã hoá token
+                                                .tokenValiditySeconds(7 * 24 * 60 * 60)
+                                                .userDetailsService(userDetailsService))
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                                // Authorize
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/login", "/register", "/health", "/css/**", "/js/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+
+                                // Form login
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .defaultSuccessUrl("/", true)
+                                                .permitAll())
+
+                                // Logout
+                                .logout(logout -> logout
+                                                .logoutSuccessUrl("/login?logout")
+                                                .deleteCookies("remember-me")
+                                )
+
+                                // UserDetailsService
+                                .userDetailsService(userDetailsService);
+
+                return http.build();
+        }
+
+        @Bean
+        PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
 }
