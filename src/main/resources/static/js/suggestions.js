@@ -20,7 +20,14 @@ function loadPageData() {
 // 2. Hàm vẽ giao diện
 function renderLayout(dishTypes, groups) {
     const container = document.getElementById('dishTypeContainer');
-    container.innerHTML = ''; // Xóa chữ "Đang tải"
+    container.innerHTML = '';
+    if (dishTypes.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted">
+                Chưa có món ăn nào, hãy vào <a href="/dishes">Danh sách món ăn</a> để thêm mới
+            </div>`;
+        return;
+    }
 
     dishTypes.forEach((type) => {
         const dishes = groups[type.id] || [];
@@ -45,8 +52,8 @@ function renderLayout(dishTypes, groups) {
                                     type.id
                                 }" onsubmit="return false;">
                                     <input type="text" id="input-${type.id}" value="${
-                                    type.label
-                                }" class="form-control form-control-sm" required />
+            type.label
+        }" class="form-control form-control-sm" required />
                                     <button type="button" class="btn btn-sm btn-success" onclick="saveType(${
                                         type.id
                                     })"><i class="fa-solid fa-floppy-disk"></i></button>
@@ -73,7 +80,7 @@ function renderLayout(dishTypes, groups) {
 // 3. Hàm vẽ danh sách món ăn (li)
 function renderDishes(dishes, typeId) {
     if (dishes.length === 0) {
-        return `<li class="list-group-item text-muted text-center fst-italic" id="empty-msg-${typeId}">Chưa có món nào được chọn</li>`;
+        return `<li class="list-group-item text-muted text-center" id="empty-msg-${typeId}">Chưa có món nào được chọn</li>`;
     }
     return dishes
         .map(
@@ -197,6 +204,23 @@ function eatDish(dishId, typeId) {
         });
 }
 
+function checkDishTypesEmpty() {
+    const container = document.getElementById('dishTypeContainer');
+    if (!container) return;
+
+    // Mỗi dish type là 1 card có id dish-type-*
+    const types = container.querySelectorAll('[id^="dish-type-"]');
+
+    if (types.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted">
+                Chưa có món ăn nào, hãy vào 
+                <a href="/dishes">Danh sách món ăn</a> để thêm mới
+            </div>
+        `;
+    }
+}
+
 // Check danh sách có rỗng không
 function checkEmpty(typeId) {
     const ul = document.getElementById(`dish-group-${typeId}`);
@@ -205,10 +229,87 @@ function checkEmpty(typeId) {
     const currentItems = ul.getElementsByTagName('li');
     if (currentItems.length === 0) {
         const emptyHtml = `
-            <li class="list-group-item text-muted text-center fst-italic" 
+            <li class="list-group-item text-muted text-center" 
                 id="empty-msg-${typeId}">
                 Chưa có món nào được chọn
             </li>`;
         ul.innerHTML = emptyHtml;
     }
+}
+
+// Edit dish type
+function saveType(id) {
+    const input = document.getElementById(`input-${id}`);
+    const newLabel = input.value.trim();
+
+    if (!newLabel) {
+        showToast({
+            message: 'Tên loại món không được để trống',
+            type: 'warning',
+        });
+        return;
+    }
+
+    fetch(`/api/dish-types/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ label: newLabel }),
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            document.getElementById(`label-${id}`).innerText = data.label;
+            cancelEditType(id);
+        })
+        .catch((err) => {
+            showToast({
+                message: 'Cập nhật loại món thất bại',
+                type: 'error',
+            });
+            console.error(err);
+        });
+}
+
+function enableEditType(id) {
+    document.getElementById('btn-handle-type-' + id).classList.add('d-none');
+    document.getElementById('label-' + id).classList.add('d-none');
+    document.getElementById('form-' + id).classList.remove('d-none');
+}
+
+function cancelEditType(id) {
+    document.getElementById('form-' + id).classList.add('d-none');
+    document.getElementById('btn-handle-type-' + id).classList.remove('d-none');
+    document.getElementById('label-' + id).classList.remove('d-none');
+}
+
+// Delete dish type
+function deleteType(id) {
+    if (!confirm('Việc này sẽ xoá luôn tất cả món ăn bên trong. Hãy suy nghĩ kỹ!')) return;
+
+    fetch(`/api/dish-types/${id}`, {
+        method: 'DELETE',
+    })
+        .then((res) => {
+            if (!res.ok) throw new Error('Delete failed');
+
+            const element = document.getElementById(`dish-type-${id}`);
+            if (element) {
+                element.remove();
+            }
+
+            showToast({
+                message: 'Loại món và các món liên quan đã bị xoá',
+                type: 'success',
+            });
+
+            checkDishTypesEmpty();
+        })
+        .catch((err) => {
+            showToast({
+                message: 'Xoá loại món thất bại',
+                type: 'error',
+            });
+            console.error(err);
+        });
 }

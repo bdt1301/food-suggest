@@ -1,11 +1,9 @@
 // Load DOM content
 const API_BASE = '/api/dishes';
-const pageSize = 8;
+const pageSize = 12;
 
 let currentPage = 0;
 let currentKeyword = '';
-let currentSort = 'dishName';
-let currentDirection = 'asc';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDishes();
@@ -18,8 +16,8 @@ function loadDishes(page = 0) {
         page,
         size: pageSize,
         keyword: currentKeyword,
-        sort: currentSort,
-        direction: currentDirection,
+        sort: 'dishName',
+        direction: 'asc',
     });
 
     fetch(`${API_BASE}?${params}`)
@@ -31,44 +29,56 @@ function loadDishes(page = 0) {
 }
 
 function renderDishes(dishes) {
-    const tbody = document.getElementById('dishesTableBody');
-    tbody.innerHTML = '';
+    const container = document.getElementById('dishesList');
+    container.innerHTML = '';
 
     if (dishes.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center text-muted fst-italic py-4">
-                    Chưa có món ăn nào!
-                </td>
-            </tr>`;
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-4">
+                Chưa có món ăn nào!
+            </div>`;
         return;
     }
 
     dishes.forEach((dish) => {
-        tbody.innerHTML += `
-            <tr>
-                <td>
-                    <span class="dish-name clickable" onclick="openNoteModal(${dish.id})">${dish.dishName}</span>
-                </td>
-                <td class="d-none d-md-table-cell">
-                    <span class="badge bg-secondary">${dish.dishType?.label ?? ''}</span>
-                </td>
-                <td>
-                    <span class="badge ${dish.hasEaten ? 'bg-success' : 'bg-danger'}">
-                        ${dish.hasEaten ? 'Đã ăn' : 'Chưa ăn'}
-                    </span>
-                </td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-warning" onclick="openDishModal(${dish.id})">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteDish(${dish.id})">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+        container.innerHTML += `
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="dish-item d-flex justify-content-between align-items-start" data-id="${dish.id}">
+
+                    <div>
+                        <div class="d-flex align-items-center gap-1">
+                            <div class="dish-name">
+                                ${dish.dishName}
+                            </div>
+                            <i class="fa-solid fa-check 
+                                ${dish.hasEaten ? 'text-success' : 'd-none'}">
+                            </i>
+                        </div>
+                        <span class="badge bg-secondary dish-type">
+                            ${dish.dishType?.label ?? ''}
+                        </span>
                     </div>
-                </td>
-            </tr>
+
+                    <div class="dropdown dish-actions">
+                        <button class="btn btn-sm" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button class="dropdown-item" onclick="openDishModal(${dish.id})">
+                                    <i class="fa-solid fa-pen me-2"></i>Sửa
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item text-danger" onclick="deleteDish(${dish.id})">
+                                    <i class="fa-solid fa-trash me-2"></i>Xoá
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
         `;
     });
 }
@@ -97,7 +107,7 @@ function renderPagination(totalPages) {
 
     // Last
     pagination.innerHTML += `
-        <li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
+        <li class="page-item ${currentPage === 0 || currentPage === totalPages - 1 ? 'disabled' : ''}">
             <button class="page-link" onclick="loadDishes(${totalPages - 1})">Last</button>
         </li>
     `;
@@ -107,39 +117,6 @@ function renderPagination(totalPages) {
 function onSearchInput() {
     currentKeyword = document.getElementById('searchName').value;
     loadDishes(0);
-}
-
-// Sort
-document.querySelectorAll('th.sortable').forEach((header) => {
-    header.addEventListener('click', () => {
-        const field = header.dataset.field;
-
-        if (currentSort === field) {
-            currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            currentSort = field;
-            currentDirection = 'asc';
-        }
-
-        loadDishes(0);
-        updateSortIcons();
-    });
-});
-
-function updateSortIcons() {
-    document.querySelectorAll('th.sortable').forEach((th) => {
-        const arrow = th.querySelector('.th-arrow');
-        if (!arrow) return;
-
-        if (th.dataset.field === currentSort) {
-            arrow.innerHTML =
-                currentDirection === 'asc'
-                    ? '<i class="fa-solid fa-arrow-up-short-wide"></i>'
-                    : '<i class="fa-solid fa-arrow-down-wide-short"></i>';
-        } else {
-            arrow.innerHTML = '';
-        }
-    });
 }
 
 function deleteDish(id) {
@@ -183,3 +160,14 @@ function markAllUneaten() {
             });
         });
 }
+
+// Chặn hành vi cha khi click dish-actions
+document.addEventListener('click', function (e) {
+    const dishItem = e.target.closest('.dish-item');
+    if (!dishItem) return;
+
+    if (e.target.closest('.dish-actions')) return;
+
+    const dishId = dishItem.dataset.id;
+    openNoteModal(dishId);
+});

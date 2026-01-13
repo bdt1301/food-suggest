@@ -29,7 +29,7 @@ function openNoteModal(dishId) {
             // VIEW
             document.getElementById('noteViewContent').innerHTML = note.trim()
                 ? note
-                : '<span class="text-muted fst-italic">Chưa có ghi chú</span>';
+                : '<span class="text-muted">Chưa có ghi chú</span>';
 
             switchToView();
 
@@ -74,7 +74,7 @@ function saveNote() {
             // cập nhật VIEW
             document.getElementById('noteViewContent').innerHTML = noteHtml.trim()
                 ? noteHtml
-                : '<span class="text-muted fst-italic">Chưa có ghi chú</span>';
+                : '<span class="text-muted">Chưa có ghi chú</span>';
 
             switchToView();
 

@@ -5,25 +5,37 @@ body {
     justify-content: space-between;
 }
 
-th.sortable {
+/* Dishes list */
+.dish-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.15s ease;
+}
+
+.dish-item:hover {
+    background: #eef1f4;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
     cursor: pointer;
 }
 
-.th-content {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 8px;
+.dish-name {
+    font-weight: 500;
+    cursor: pointer;
 }
 
-th.sortable:hover .th-label {
-    text-decoration: underline;
+.dish-type {
+    font-size: 0.8rem;
 }
 
-.th-arrow {
-    width: 16px;
-    display: inline-block;
-    text-align: right;
+.dish-actions button {
+    background: transparent;
+    border: none;
+}
+
+.dish-actions button:hover {
+    color: #0d6efd;
 }
 
 /* Note modal */
@@ -71,16 +83,4 @@ th.sortable:hover .th-label {
 .toast.toast-hide {
     opacity: 0;
     transform: translateX(100%);
-}
-
-.dish-name.clickable {
-    display: block;
-    padding: 4px 0;
-    width: 100%;
-}
-
-.dish-name.clickable:hover {
-    cursor: pointer;
-    text-decoration: underline;
-    color: #0d6efd;
 }
