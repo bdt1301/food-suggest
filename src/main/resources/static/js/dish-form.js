@@ -122,22 +122,25 @@ function submitDish(event, id) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     })
-        .then((res) => {
-            if (!res.ok) throw new Error();
-            return res.json();
+        .then(async (res) => {
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Lưu món ăn không thành công');
+            }
+
+            return data;
         })
         .then((data) => {
             bootstrap.Modal.getInstance(document.getElementById('dishModal')).hide();
 
             loadDishes();
 
-            // Toast chính
             showToast({
                 message: id ? 'Cập nhật món ăn thành công' : 'Thêm món ăn thành công',
                 type: 'success',
             });
 
-            // Toast reset
             if (data.resetPerformed) {
                 showToast({
                     message: 'Đã ăn hết món trong loại này',
@@ -147,10 +150,9 @@ function submitDish(event, id) {
         })
         .catch((err) => {
             showToast({
-                message: 'Lưu món ăn không thành công',
+                message: err.message,
                 type: 'error',
             });
-            console.error(err);
         });
 }
 

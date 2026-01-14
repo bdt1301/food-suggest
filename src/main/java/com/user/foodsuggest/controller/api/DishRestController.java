@@ -32,7 +32,7 @@ public class DishRestController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "dishName") String sort,
             @RequestParam(defaultValue = "asc") String direction) {
-                
+
         Sort sortObj = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sort).descending()
                 : Sort.by(sort).ascending();
@@ -52,18 +52,23 @@ public class DishRestController {
     // CREATE
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Dish dish) {
-        Dish createdDish = dishService.create(dish);
+        try {
+            Dish createdDish = dishService.create(dish);
 
-        boolean reset = false;
-        if (createdDish.isHasEaten()) {
-            reset = dishService
-                    .resetIfAllEatenByDishType(createdDish.getDishType());
+            boolean reset = false;
+            if (createdDish.isHasEaten()) {
+                reset = dishService
+                        .resetIfAllEatenByDishType(createdDish.getDishType());
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "dish", createdDish,
+                            "resetPerformed", reset));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
         }
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "dish", createdDish,
-                        "resetPerformed", reset));
     }
 
     // UPDATE
@@ -71,15 +76,19 @@ public class DishRestController {
     public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestBody Dish dish) {
+        try {
+            Dish updatedDish = dishService.update(id, dish);
 
-        Dish updatedDish = dishService.update(id, dish);
+            boolean reset = dishService
+                    .resetIfAllEatenByDishType(updatedDish.getDishType());
 
-        boolean reset = dishService
-                .resetIfAllEatenByDishType(updatedDish.getDishType());
-
-        return ResponseEntity.ok(Map.of(
-                "dish", updatedDish,
-                "resetPerformed", reset));
+            return ResponseEntity.ok(Map.of(
+                    "dish", updatedDish,
+                    "resetPerformed", reset));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 
     // DELETE

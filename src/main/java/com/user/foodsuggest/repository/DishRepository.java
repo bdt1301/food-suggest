@@ -11,19 +11,23 @@ import com.user.foodsuggest.model.DishType;
 import com.user.foodsuggest.model.User;
 
 public interface DishRepository extends JpaRepository<Dish, Long> {
-	
-	Optional<Dish> findByIdAndOwner(Long id, User owner);
 
-	List<Dish> findByOwnerAndDishType(User owner, DishType dishType);
+    boolean existsByOwnerAndDishNameIgnoreCase(User owner, String dishName);
 
-	List<Dish> findByOwnerAndHasEatenTrue(User owner);
+    boolean existsByOwnerAndDishNameIgnoreCaseAndIdNot(User owner, String dishName, Long id);
 
-	List<Dish> findByOwnerAndHasEatenFalseAndActiveTrue(User owner);
+    Optional<Dish> findByIdAndOwner(Long id, User owner);
 
-	List<Dish> findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(User owner, DishType dishType);
+    List<Dish> findByOwnerAndDishType(User owner, DishType dishType);
 
-	Page<Dish> findByOwner(User owner, Pageable pageable);
+    List<Dish> findByOwnerAndHasEatenTrue(User owner);
 
-	Page<Dish> findByOwnerAndDishNameContainingIgnoreCase(User owner, String keyword, Pageable pageable);
+    List<Dish> findByOwnerAndHasEatenFalseAndActiveTrue(User owner);
+
+    List<Dish> findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(User owner, DishType dishType);
+
+    Page<Dish> findByOwner(User owner, Pageable pageable);
+
+    Page<Dish> findByOwnerAndDishNameContainingIgnoreCase(User owner, String keyword, Pageable pageable);
 
 }
