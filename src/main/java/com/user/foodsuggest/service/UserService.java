@@ -1,5 +1,8 @@
 package com.user.foodsuggest.service;
 
+import java.util.Optional;
+
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +27,18 @@ public class UserService {
         String username = auth.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public Optional<User> getCurrentUserOptional() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null ||
+                auth instanceof AnonymousAuthenticationToken ||
+                !auth.isAuthenticated()) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByUsername(auth.getName());
     }
 
     public void registerUser(RegisterDTO registerDTO) {

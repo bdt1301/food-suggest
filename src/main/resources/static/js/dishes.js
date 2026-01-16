@@ -45,18 +45,25 @@ function renderDishes(dishes) {
             <div class="col-lg-3 col-md-4 col-sm-6">
                 <div class="dish-item d-flex justify-content-between align-items-start" data-id="${dish.id}">
 
-                    <div>
-                        <div class="d-flex align-items-center gap-1">
-                            <div class="dish-name">
-                                ${dish.dishName}
+                    <div class="d-flex align-items-center gap-3">
+                        
+                        ${dish.visibility === 'PUBLIC'
+                            ? `<i class="fa-solid fa-globe text-success" title="Công khai"></i>`
+                            : `<i class="fa-solid fa-lock text-secondary" title="Riêng tư"></i>`}
+
+                        <div>
+                            <div class="d-flex align-items-center gap-1">
+                                <div class="dish-name">
+                                    ${dish.dishName}
+                                </div>
+                                <i class="fa-solid fa-check 
+                                    ${dish.hasEaten ? 'text-success' : 'd-none'}">
+                                </i>
                             </div>
-                            <i class="fa-solid fa-check 
-                                ${dish.hasEaten ? 'text-success' : 'd-none'}">
-                            </i>
+                            <span class="badge bg-secondary dish-type">
+                                ${dish.dishType?.label ?? ''}
+                            </span>
                         </div>
-                        <span class="badge bg-secondary dish-type">
-                            ${dish.dishType?.label ?? ''}
-                        </span>
                     </div>
 
                     <div class="dropdown dish-actions">
@@ -87,13 +94,6 @@ function renderPagination(totalPages) {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
 
-    // First
-    pagination.innerHTML += `
-        <li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
-            <button class="page-link" onclick="loadDishes(0)">First</button>
-        </li>
-    `;
-
     // Page numbers
     for (let i = 0; i < totalPages; i++) {
         pagination.innerHTML += `
@@ -104,13 +104,6 @@ function renderPagination(totalPages) {
             </li>
         `;
     }
-
-    // Last
-    pagination.innerHTML += `
-        <li class="page-item ${currentPage === 0 || currentPage === totalPages - 1 ? 'disabled' : ''}">
-            <button class="page-link" onclick="loadDishes(${totalPages - 1})">Last</button>
-        </li>
-    `;
 }
 
 // Search

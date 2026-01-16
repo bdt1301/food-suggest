@@ -89,6 +89,7 @@ public class DishService {
         existing.setDishName(name);
         existing.setDishType(type);
         existing.setHasEaten(dish.isHasEaten());
+        existing.setVisibility(dish.getVisibility());
 
         return existing;
     }

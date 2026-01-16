@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class WebController {
     @GetMapping("/")
-    public String suggestions() {
+    public String communityDishes() {
         return "index";
     }
 
@@ -25,4 +25,9 @@ public class WebController {
         return "configuration";
     }
 
+    @GetMapping("/suggestions")
+    public String suggestions() {
+        return "suggestions";
+    }
+    
 }

@@ -1,29 +1,32 @@
-function openDishModal(id = null) {
-    let url = '/api/dishes/modal';
-    if (id) url += '?id=' + id;
-
-    fetch(url)
+function openCloneModal(sourceDishId) {
+    fetch(`/api/community/modal?id=${sourceDishId}`)
         .then((res) => res.json())
         .then((data) => {
-            renderDishForm(data.dish, data.dishTypes);
-            document.getElementById('dishModalTitle').innerText = id ? 'Chỉnh sửa món ăn' : 'Thêm món ăn';
+            renderCloneDishForm(data.dish, data.dishTypes);
+
+            document.getElementById('dishModalTitle').innerText = 'Mang món ăn về danh sách cá nhân';
 
             new bootstrap.Modal(document.getElementById('dishModal')).show();
+        })
+        .catch(() => {
+            showToast({
+                message: "Vui lòng đăng nhập để clone món ăn",
+                type: 'error',
+            });
         });
 }
 
-function renderDishForm(dish, dishTypes) {
+function renderCloneDishForm(dish, dishTypes) {
     const body = document.getElementById('dishModalBody');
 
     body.innerHTML = `
-        <form onsubmit="submitDish(event, ${dish.id ?? 'null'})">
+        <form onsubmit="submitCloneDish(event, ${dish.id})">
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Tên món</label>
                 <input type="text"
                     class="form-control form-control-lg"
-                    value="${dish.dishName ?? ''}"
-                    placeholder="Ví dụ: Gà chiên nước mắm"
+                    value="${dish.dishName}"
                     required
                     id="dishName"
                 />
@@ -80,25 +83,8 @@ function renderDishForm(dish, dishTypes) {
                 </div>
             </div>
 
-            <div class="form-check form-switch mb-3">
-                <input class="form-check-input"
-                    type="checkbox"
-                    id="hasEaten"
-                    ${dish.hasEaten ? 'checked' : ''}
-                    onchange="this.nextElementSibling.innerText = this.checked ? 'Đã ăn' : 'Chưa ăn'">
-                <label class="form-check-label fw-semibold">${dish.hasEaten ? "Đã ăn" : "Chưa ăn"}</label>
-            </div>
-
-            <div class="form-check mb-4">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="isPublic"
-                    ${dish.visibility === 'PUBLIC' ? 'checked' : ''}
-                />
-                <label class="form-check-label fw-semibold" for="isPublic">
-                    Chia sẻ lên Cộng đồng
-                </label>
+            <div class="form-text text-muted mb-4">
+                Món ăn sẽ được lưu ở chế độ <strong>Riêng tư</strong>
             </div>
 
             <div class="d-flex justify-content-end gap-2">
@@ -107,60 +93,43 @@ function renderDishForm(dish, dishTypes) {
                     data-bs-dismiss="modal">Huỷ</button>
 
                 <button type="submit"
-                    class="btn ${dish.id ? 'btn-success' : 'btn-primary'}">
-                    ${dish.id ? 'Cập nhật' : 'Thêm mới'}
+                    class="btn btn-primary">
+                    Lưu
                 </button>
             </div>
         </form>
     `;
 }
 
-function submitDish(event, id) {
+function submitCloneDish(event, sourceDishId) {
     event.preventDefault();
 
     const payload = {
+        sourceDishId,
         dishName: document.getElementById('dishName').value,
-        hasEaten: document.getElementById('hasEaten').checked,
-        visibility: document.getElementById('isPublic').checked ? 'PUBLIC' : 'PRIVATE',
-        active: false,
-        dishType: {
-            id: document.getElementById('dishTypeSelect').value,
-        },
+        dishTypeId: document.getElementById('dishTypeSelect').value,
     };
 
-    const method = id ? 'PUT' : 'POST';
-    const url = id ? `/api/dishes/${id}` : '/api/dishes';
-
-    fetch(url, {
-        method,
+    fetch('/api/community/clone', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     })
         .then(async (res) => {
-            const data = await res.json();
-
             if (!res.ok) {
-                throw new Error(data.message || 'Lưu món ăn không thành công');
+                const data = await res.json();
+                throw new Error(data.message);
             }
-
-            return data;
         })
-        .then((data) => {
+        .then(() => {
             bootstrap.Modal.getInstance(document.getElementById('dishModal')).hide();
 
-            loadDishes();
+            loadCommunityDishes();
 
             showToast({
-                message: id ? 'Cập nhật món ăn thành công' : 'Thêm món ăn thành công',
+                message: 'Đã thêm món ăn vào danh sách cá nhân',
                 type: 'success',
             });
-
-            if (data.resetPerformed) {
-                showToast({
-                    message: 'Đã ăn hết món trong loại này',
-                    type: 'info',
-                });
-            }
         })
         .catch((err) => {
             showToast({
