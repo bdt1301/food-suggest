@@ -5,6 +5,18 @@ body {
     justify-content: space-between;
 }
 
+/* Fix dropdown làm giãn navbar */
+@media (max-width: 768px) {
+    .navbar .dropdown {
+        position: relative;
+    }
+
+    .navbar .dropdown-menu {
+        position: absolute;
+        top: 100%;
+    }
+}
+
 /* Dishes list */
 .dish-item {
     background: #fff;
