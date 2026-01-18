@@ -89,7 +89,7 @@ function renderDishes(dishes) {
                                 </button>
                             </li>
                             <li>
-                                <button class="dropdown-item text-danger" onclick="deleteDish(${dish.id})">
+                                <button class="dropdown-item text-danger" onclick="deleteDish(${dish.id}, '${dish.dishName}')">
                                     <i class="fa-solid fa-trash me-2"></i>Xoá
                                 </button>
                             </li>
@@ -135,8 +135,11 @@ function openFilterModal() {
 }
 
 function renderFilterForm(dishTypes, visibilities) {
-    document.getElementById('filterModalBody').innerHTML = `
-        <form onsubmit="applyFilters(event)">
+    const body = document.getElementById('filterModalBody');
+    const footer = document.getElementById('filterModalFooter');
+
+    body.innerHTML = `
+        <form id="filterForm" onsubmit="applyFilters(event)">
 
             <!-- Dish Type -->
             <div class="mb-3">
@@ -156,49 +159,50 @@ function renderFilterForm(dishTypes, visibilities) {
                 </select>
             </div>
 
-            <!-- Has Eaten -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Trạng thái ăn</label>
-                <select class="form-select form-select-lg" id="filterHasEaten">
-                    <option value="">-- Tất cả --</option>
-                    <option value="true" ${currentFilters.hasEaten === 'true' ? 'selected' : ''}>
-                        Đã ăn
-                    </option>
-                    <option value="false" ${currentFilters.hasEaten === 'false' ? 'selected' : ''}>
-                        Chưa ăn
-                    </option>
-                </select>
-            </div>
-
-            <!-- Visibility -->
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Chia sẻ</label>
-                <select class="form-select form-select-lg" id="filterVisibility">
-                    <option value="">-- Tất cả --</option>
-                    ${visibilities
-                        .map(
-                            (v) => `
-                        <option value="${v}"
-                            ${currentFilters.visibility === v ? 'selected' : ''}>
-                            ${v === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
+            <div class="d-flex gap-2">
+                <!-- Has Eaten -->
+                <div class="flex-grow-1">
+                    <label class="form-label fw-semibold">Trạng thái ăn</label>
+                    <select class="form-select form-select-lg" id="filterHasEaten">
+                        <option value="">-- Tất cả --</option>
+                        <option value="true" ${currentFilters.hasEaten === 'true' ? 'selected' : ''}>
+                            Đã ăn
                         </option>
-                    `,
-                        )
-                        .join('')}
-                </select>
-            </div>
+                        <option value="false" ${currentFilters.hasEaten === 'false' ? 'selected' : ''}>
+                            Chưa ăn
+                        </option>
+                    </select>
+                </div>
 
-            <div class="d-flex justify-content-between">
-                <button type="button"
-                        class="btn btn-outline-danger"
-                        onclick="resetFilters()">
-                    Reset
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    Áp dụng
-                </button>
+                <!-- Visibility -->
+                <div class="flex-grow-1">
+                    <label class="form-label fw-semibold">Chia sẻ</label>
+                    <select class="form-select form-select-lg" id="filterVisibility">
+                        <option value="">-- Tất cả --</option>
+                        ${visibilities
+                            .map(
+                                (v) => `
+                            <option value="${v}"
+                                ${currentFilters.visibility === v ? 'selected' : ''}>
+                                ${v === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
+                            </option>
+                        `,
+                            )
+                            .join('')}
+                    </select>
+                </div>
             </div>
         </form>
+    `;
+    footer.innerHTML = `
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-danger" onclick="resetFilters()">
+                Reset
+            </button>
+            <button type="submit" form="filterForm" class="btn btn-primary">
+                Áp dụng
+            </button>
+        </div>
     `;
 }
 
@@ -216,59 +220,62 @@ function applyFilters(e) {
 }
 
 function resetFilters() {
-    currentFilters = {
-        dishTypeId: '',
-        hasEaten: '',
-        visibility: '',
-    };
-
     document.getElementById('filterDishType').value = '';
     document.getElementById('filterHasEaten').value = '';
     document.getElementById('filterVisibility').value = '';
-
     loadDishes(0);
 }
 
-function deleteDish(id) {
-    if (!confirm('Bạn có chắc muốn xoá món này?')) return;
-
-    fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
-        .then((res) => {
-            if (!res.ok) throw new Error();
-
-            loadDishes();
-
-            showToast({
-                message: 'Món ăn đã được xoá thành công',
-                type: 'success',
-            });
-        })
-        .catch(() => {
-            showToast({
-                message: 'Không thể xoá món ăn',
-                type: 'error',
-            });
-        });
+function deleteDish(id, dishName) {
+    openConfirmModal({
+        title: 'Xoá món ăn',
+        message: `
+            <div class="text-danger fw-semibold">
+                Hành động này không thể hoàn tác.
+            </div>
+            <div>
+                Bạn có chắc muốn xoá món <b>"${dishName}"</b> không?
+            </div>
+        `,
+        confirmText: 'Xoá',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
+                .then((res) => {
+                    if (!res.ok) throw new Error();
+                    loadDishes();
+                    showToast({
+                        message: `Đã xoá món "${dishName}"`,
+                        type: 'success',
+                    });
+                })
+                .catch(() => {
+                    showToast({
+                        message: 'Không thể xoá món ăn',
+                        type: 'error',
+                    });
+                });
+        },
+    });
 }
 
 function markAllUneaten() {
-    fetch(`${API_BASE}/mark-all-uneaten`, { method: 'PUT' })
-        .then((res) => {
-            if (!res.ok) throw new Error();
-
-            loadDishes();
-
-            showToast({
-                message: 'Tất cả món ăn đã được đánh dấu là chưa ăn',
-                type: 'info',
+    openConfirmModal({
+        title: 'Đặt lại trạng thái',
+        message: 'Tất cả món ăn sẽ chuyển sang <b>Chưa ăn</b>',
+        confirmText: 'Xác nhận',
+        confirmClass: 'btn-warning',
+        onConfirm: () => {
+            fetch(`${API_BASE}/mark-all-uneaten`, { method: 'PUT' }).then((res) => {
+                if (!res.ok) throw new Error();
+                loadDishes();
+                showToast({
+                    message: 'Đã reset trạng thái món ăn',
+                    type: 'info',
+                });
             });
-        })
-        .catch(() => {
-            showToast({
-                message: 'Không thể cập nhật trạng thái món ăn',
-                type: 'error',
-            });
-        });
+        },
+    });
 }
 
 // Chặn hành vi cha khi click dish-actions

@@ -48,9 +48,15 @@ public class CommunityService {
                 currentUser != null && dish.getOwner().getId().equals(currentUser.getId())));
     }
 
-    public Dish findPublicDish(Long id) {
-        return dishRepository.findByIdAndVisibility(id, Visibility.PUBLIC)
-                .orElseThrow(() -> new IllegalArgumentException("Món ăn không tồn tại hoặc không được chia sẻ"));
+    public CommunityDishDTO findPublicDish(Long id) {
+        Dish dish = dishRepository.findByIdAndVisibility(id, Visibility.PUBLIC)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Món ăn không tồn tại hoặc không được chia sẻ"));
+
+        User currentUser = userService.getCurrentUser();
+
+        return new CommunityDishDTO(dish.getId(), dish.getDishName(), dish.getNote(), dish.getOwner().getUsername(),
+                dish.getOwner().getId().equals(currentUser.getId()));
     }
 
     @Transactional

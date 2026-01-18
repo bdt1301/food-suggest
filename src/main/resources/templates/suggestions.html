@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8" />
@@ -36,6 +36,7 @@
         <div th:replace="~{fragments/footer :: footer}"></div>
 
         <div th:replace="~{fragments/note-editor-modal :: note-editor-modal}"></div>
+        <div th:replace="~{fragments/confirm-modal :: confirm-modal}"></div>
         <div th:replace="~{fragments/toast :: toast}"></div>
 
         <!-- Bootstrap JS -->
@@ -47,6 +48,7 @@
         <!-- Render body page -->
         <script th:src="@{/js/suggestions.js}"></script>
         <script th:src="@{/js/note-editor.js}"></script>
+        <script th:src="@{/js/confirm.js}"></script>
         <script th:src="@{/js/toast.js}"></script>
     </body>
 </html>

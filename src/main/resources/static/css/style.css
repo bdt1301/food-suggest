@@ -47,12 +47,14 @@ body {
     font-size: 0.8rem;
 }
 
-.dish-actions button {
+.dish-actions,
+.type-actions button {
     background: transparent;
     border: none;
 }
 
-.dish-actions button:hover {
+.dish-actions button:hover,
+.type-actions button:hover {
     color: #0d6efd;
 }
 

@@ -14,9 +14,10 @@ function openDishModal(id = null) {
 
 function renderDishForm(dish, dishTypes) {
     const body = document.getElementById('dishModalBody');
+    const footer = document.getElementById('dishModalFooter');
 
     body.innerHTML = `
-        <form onsubmit="submitDish(event, ${dish.id ?? 'null'})">
+        <form id="dishForm" onsubmit="submitDish(event, ${dish.id ?? 'null'})">
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Tên món</label>
@@ -34,7 +35,7 @@ function renderDishForm(dish, dishTypes) {
                 <select id="dishTypeSelect"
                     class="form-select form-select-lg mb-2"
                     required>
-                    <option value="">-- Chọn loại --</option>
+                    <option value="" class="text-muted">-- Chọn loại --</option>
                     ${dishTypes
                         .map(
                             (t) => `
@@ -48,7 +49,7 @@ function renderDishForm(dish, dishTypes) {
                 </select>
                 <button
                     type="button"
-                    class="btn btn-outline-primary btn-sm"
+                    class="btn btn-outline-secondary btn-sm"
                     onclick="toggleNewDishType()"
                 >
                     Không có loại nào để chọn?
@@ -80,44 +81,62 @@ function renderDishForm(dish, dishTypes) {
                 </div>
             </div>
 
-            <div class="form-check form-switch mb-3">
-                <input class="form-check-input"
-                    type="checkbox"
-                    id="hasEaten"
-                    ${dish.hasEaten ? 'checked' : ''}
-                    onchange="this.nextElementSibling.innerText = this.checked ? 'Đã ăn' : 'Chưa ăn'">
-                <label class="form-check-label fw-semibold">${dish.hasEaten ? "Đã ăn" : "Chưa ăn"}</label>
-            </div>
+            <div class="d-flex justify-content-between">
+                <div class="form-check form-switch clickable">
+                    <input class="form-check-input"
+                        type="checkbox"
+                        id="hasEaten"
+                        ${dish.hasEaten ? 'checked' : ''}
+                        onchange="this.nextElementSibling.innerText = this.checked ? 'Đã ăn' : 'Chưa ăn'">
+                    <label class="form-check-label fw-semibold" for="hasEaten">${dish.hasEaten ? 'Đã ăn' : 'Chưa ăn'}</label>
+                </div>
 
-            <div class="form-check mb-4">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="isPublic"
-                    ${dish.visibility === 'PUBLIC' ? 'checked' : ''}
-                />
-                <label class="form-check-label fw-semibold" for="isPublic">
-                    Chia sẻ lên Cộng đồng
-                </label>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">Huỷ</button>
-
-                <button type="submit"
-                    class="btn ${dish.id ? 'btn-success' : 'btn-primary'}">
-                    ${dish.id ? 'Cập nhật' : 'Thêm mới'}
-                </button>
+                <div class="form-check clickable">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="isPublic"
+                        ${dish.visibility === 'PUBLIC' ? 'checked' : ''}
+                    />
+                    <label class="form-check-label fw-semibold" for="isPublic">
+                        Chia sẻ lên Cộng đồng
+                    </label>
+                </div>
             </div>
         </form>
+    `;
+
+    footer.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Huỷ
+        </button>
+
+        <button type="submit" form="dishForm" class="btn ${dish.id ? 'btn-success' : 'btn-primary'}">
+            ${dish.id ? 'Cập nhật' : 'Thêm mới'}
+        </button>
     `;
 }
 
 function submitDish(event, id) {
     event.preventDefault();
 
+    const dishModalEl = document.getElementById('dishModal');
+    const dishModal = bootstrap.Modal.getInstance(dishModalEl);
+    dishModal.hide();
+
+    const dishName = document.getElementById('dishName').value;
+
+    openConfirmModal({
+        title: id ? 'Cập nhật món ăn' : 'Thêm món ăn',
+        message: `Bạn có chắc muốn ${id ? 'cập nhật' : 'thêm'} món <b>"${dishName}"</b> không?`,
+        confirmText: id ? 'Cập nhật' : 'Thêm',
+        confirmClass: id ? 'btn-success' : 'btn-primary',
+        onConfirm: () => submitDishConfirmed(id),
+        onCancel: () => dishModal.show(),
+    });
+}
+
+function submitDishConfirmed(id) {
     const payload = {
         dishName: document.getElementById('dishName').value,
         hasEaten: document.getElementById('hasEaten').checked,
@@ -138,11 +157,7 @@ function submitDish(event, id) {
     })
         .then(async (res) => {
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || 'Lưu món ăn không thành công');
-            }
-
+            if (!res.ok) throw new Error(data.message);
             return data;
         })
         .then((data) => {
@@ -151,7 +166,7 @@ function submitDish(event, id) {
             loadDishes();
 
             showToast({
-                message: id ? 'Cập nhật món ăn thành công' : 'Thêm món ăn thành công',
+                message: id ? `Cập nhật món ăn thành công` : `Thêm món mới thành công`,
                 type: 'success',
             });
 
@@ -164,9 +179,10 @@ function submitDish(event, id) {
         })
         .catch((err) => {
             showToast({
-                message: err.message,
+                message: `Đã xảy ra lỗi khi ${id ? 'thêm' : 'cập nhật'} món ăn`,
                 type: 'error',
             });
+            console.error(err);
         });
 }
 
@@ -212,7 +228,7 @@ async function addDishType() {
         document.getElementById('newDishTypeBox').classList.add('d-none');
 
         showToast({
-            message: `Loại món "${dishType.label}" đã được tạo`,
+            message: `Loại món mới đã được tạo`,
             type: 'success',
         });
     } catch (err) {

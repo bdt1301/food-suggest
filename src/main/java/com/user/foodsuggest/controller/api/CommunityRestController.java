@@ -44,7 +44,7 @@ public class CommunityRestController {
     public ResponseEntity<Map<String, Object>> getCloneSource(
             @RequestParam Long id) {
 
-        Dish dish = communityService.findPublicDish(id);
+        CommunityDishDTO dish = communityService.findPublicDish(id);
 
         return ResponseEntity.ok(
                 Map.of(
@@ -53,7 +53,7 @@ public class CommunityRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Dish> getPublicDish(@PathVariable Long id) {
+    public ResponseEntity<CommunityDishDTO> getPublicDish(@PathVariable Long id) {
         return ResponseEntity.ok(communityService.findPublicDish(id));
     }
 

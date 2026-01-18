@@ -24,7 +24,7 @@ function renderLayout(dishTypes, groups) {
     if (dishTypes.length === 0) {
         container.innerHTML = `
             <div class="text-center text-muted">
-                Chưa có món ăn nào, hãy vào <a href="/dishes">Danh sách món ăn</a> để thêm mới
+                Chưa có món ăn nào, hãy vào <a href="/dishes">Món ăn cá nhân</a> để thêm mới
             </div>`;
         return;
     }
@@ -39,21 +39,33 @@ function renderLayout(dishTypes, groups) {
                             <div class="d-flex gap-2 align-items-center">
                                 <h5 class="card-title mb-0" id="label-${type.id}">${type.label}</h5>
                                 
-                                <div id="btn-handle-type-${type.id}" class="btn-group btn-group-sm">
-                                    <button class="btn btn-warning" onclick="enableEditType(${
-                                        type.id
-                                    })"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-danger" onclick="deleteType(${
-                                        type.id
-                                    })"><i class="fa-solid fa-trash"></i></button>
+                                <div id="btn-handle-type-${type.id}" class="dropdown type-actions">
+                                    <button class="btn btn-sm" data-bs-toggle="dropdown">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button class="dropdown-item" onclick="enableEditType(${type.id})">
+                                                <i class="fa-solid fa-pen me-2"></i>Sửa
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                class="dropdown-item text-danger"
+                                                onclick="deleteType(${type.id}, '${type.label}')">
+                                                <i class="fa-solid fa-trash me-2"></i>Xoá
+                                            </button>
+                                        </li>
+                                    </ul>
                                 </div>
 
                                 <form class="d-none d-flex align-items-center gap-1" id="form-${
                                     type.id
                                 }" onsubmit="return false;">
                                     <input type="text" id="input-${type.id}" value="${
-            type.label
-        }" class="form-control form-control-sm" required />
+                                        type.label
+                                    }" class="form-control form-control-sm" required />
                                     <button type="button" class="btn btn-sm btn-success" onclick="saveType(${
                                         type.id
                                     })"><i class="fa-solid fa-floppy-disk"></i></button>
@@ -196,11 +208,11 @@ function eatDish(dishId, typeId) {
             }
         })
         .catch((err) => {
-            console.error(err);
             showToast({
                 message: 'Ăn món không thành công',
                 type: 'error',
             });
+            console.error(err);
         });
 }
 
@@ -284,9 +296,19 @@ function cancelEditType(id) {
 }
 
 // Delete dish type
-function deleteType(id) {
-    if (!confirm('Việc này sẽ xoá luôn tất cả món ăn bên trong. Hãy suy nghĩ kỹ!')) return;
+function deleteType(id, label) {
+    openConfirmModal({
+        title: 'Cảnh báo xóa loại món',
+        message: `
+            <div class="text-danger fw-semibold">Việc này sẽ xoá luôn tất cả món ăn bên trong "${label}".</div>
+            <div>Hãy suy nghĩ thật kỹ trước khi thực hiện!</div>`,
+        confirmText: 'Đồng ý xóa',
+        confirmClass: 'btn-danger',
+        onConfirm: () => deleteTypeConfirmed(id),
+    });
+}
 
+function deleteTypeConfirmed(id) {
     fetch(`/api/dish-types/${id}`, {
         method: 'DELETE',
     })

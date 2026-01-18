@@ -4,13 +4,13 @@ function openCloneModal(sourceDishId) {
         .then((data) => {
             renderCloneDishForm(data.dish, data.dishTypes);
 
-            document.getElementById('dishModalTitle').innerText = 'Mang món ăn về danh sách cá nhân';
+            document.getElementById('dishModalTitle').innerText = 'Copy món ăn';
 
             new bootstrap.Modal(document.getElementById('dishModal')).show();
         })
         .catch(() => {
             showToast({
-                message: "Vui lòng đăng nhập để clone món ăn",
+                message: 'Vui lòng đăng nhập để copy món ăn',
                 type: 'error',
             });
         });
@@ -18,15 +18,16 @@ function openCloneModal(sourceDishId) {
 
 function renderCloneDishForm(dish, dishTypes) {
     const body = document.getElementById('dishModalBody');
+    const footer = document.getElementById('dishModalFooter');
 
     body.innerHTML = `
-        <form onsubmit="submitCloneDish(event, ${dish.id})">
+        <form id="cloneDishForm" onsubmit="submitCloneDish(event, ${dish.id})">
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Tên món</label>
                 <input type="text"
                     class="form-control form-control-lg"
-                    value="${dish.dishName}"
+                    value="${dish.dishName} (${dish.ownerUsername})"
                     required
                     id="dishName"
                 />
@@ -83,33 +84,51 @@ function renderCloneDishForm(dish, dishTypes) {
                 </div>
             </div>
 
-            <div class="form-text text-muted mb-4">
+            <div class="form-text text-muted">
                 Món ăn sẽ được lưu ở chế độ <strong>Riêng tư</strong>
             </div>
-
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">Huỷ</button>
-
-                <button type="submit"
-                    class="btn btn-primary">
-                    Lưu
-                </button>
-            </div>
         </form>
+    `;
+
+    footer.innerHTML = `
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+
+            <button type="submit" form="cloneDishForm" class="btn btn-primary">
+                Lưu
+            </button>
+        </div>
     `;
 }
 
 function submitCloneDish(event, sourceDishId) {
     event.preventDefault();
 
+    // 1. Lấy instance của form hiện tại và ẩn nó đi
+    const dishModalEl = document.getElementById('dishModal');
+    const dishModal = bootstrap.Modal.getInstance(dishModalEl);
+    dishModal.hide();
+
+    // 2. Lấy dữ liệu từ form để chuẩn bị cho payload
     const payload = {
         sourceDishId,
         dishName: document.getElementById('dishName').value,
         dishTypeId: document.getElementById('dishTypeSelect').value,
     };
 
+    // 3. Mở Modal xác nhận
+    openConfirmModal({
+        title: 'Sao chép món ăn',
+        message: `Bạn có chắc muốn sao chép món <b>"${payload.dishName}"</b> vào danh sách của mình không?`,
+        confirmText: 'Sao chép ngay',
+        confirmClass: 'btn-primary',
+        onConfirm: () => submitCloneDishConfirmed(payload),
+        onCancel: () => dishModal.show(),
+    });
+}
+
+// Hàm xử lý gọi API tách riêng
+function submitCloneDishConfirmed(payload) {
     fetch('/api/community/clone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,14 +137,12 @@ function submitCloneDish(event, sourceDishId) {
         .then(async (res) => {
             if (!res.ok) {
                 const data = await res.json();
-                throw new Error(data.message);
+                throw new Error(data.message || 'Có lỗi xảy ra khi sao chép');
             }
+            return res;
         })
         .then(() => {
-            bootstrap.Modal.getInstance(document.getElementById('dishModal')).hide();
-
             loadCommunityDishes();
-
             showToast({
                 message: 'Đã thêm món ăn vào danh sách cá nhân',
                 type: 'success',
@@ -133,9 +150,10 @@ function submitCloneDish(event, sourceDishId) {
         })
         .catch((err) => {
             showToast({
-                message: err.message,
+                message: 'Đã xảy ra lỗi khi thêm món ăn',
                 type: 'error',
             });
+            console.error(err);
         });
 }
 
@@ -181,7 +199,7 @@ async function addDishType() {
         document.getElementById('newDishTypeBox').classList.add('d-none');
 
         showToast({
-            message: `Loại món "${dishType.label}" đã được tạo`,
+            message: `Loại món mới đã được tạo`,
             type: 'success',
         });
     } catch (err) {
