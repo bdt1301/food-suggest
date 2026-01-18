@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8" />
@@ -36,7 +36,7 @@
                     <button class="btn btn-primary" onclick="openDishModal()">Thêm món</button>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-3">
+                <div class="col-6 col-md-4 col-lg-3 d-flex gap-2">
                     <input
                         type="text"
                         id="searchName"
@@ -44,6 +44,9 @@
                         placeholder="Tìm món ăn..."
                         onkeyup="onSearchInput()"
                     />
+                    <button class="btn btn-outline-secondary" onclick="openFilterModal()">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
                 </div>
             </div>
 
@@ -64,6 +67,7 @@
         <div th:replace="~{fragments/toast :: toast}"></div>
 
         <div th:replace="~{fragments/dish-form-modal :: dish-form-modal}"></div>
+        <div th:replace="~{fragments/filter-modal :: filter-modal}"></div>
         <div th:replace="~{fragments/note-editor-modal :: note-editor-modal}"></div>
 
         <!-- Bootstrap JS -->

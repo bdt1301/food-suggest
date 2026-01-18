@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.user.foodsuggest.dto.DishFilterDTO;
+import com.user.foodsuggest.enums.Visibility;
 import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.service.DishService;
 import com.user.foodsuggest.service.DishTypeService;
@@ -27,12 +29,11 @@ public class DishRestController {
     // Get all dishes
     @GetMapping
     public ResponseEntity<Page<Dish>> getAll(
+            DishFilterDTO filter,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "dishName") String sort,
             @RequestParam(defaultValue = "asc") String direction) {
-
         Sort sortObj = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sort).descending()
                 : Sort.by(sort).ascending();
@@ -40,7 +41,7 @@ public class DishRestController {
         Pageable pageable = PageRequest.of(page, size, sortObj);
 
         return ResponseEntity.ok(
-                dishService.search(keyword, pageable));
+                dishService.searchAdvanced(filter, pageable));
     }
 
     // Get dish
@@ -117,6 +118,14 @@ public class DishRestController {
                 Map.of(
                         "dish", dish,
                         "dishTypes", dishTypeService.findAll()));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Map<String, Object>> getFilterModal() {
+        return ResponseEntity.ok(
+                Map.of(
+                        "dishTypes", dishTypeService.findAll(),
+                        "visibilities", Visibility.values()));
     }
 
     @PutMapping("/{id}/note")

@@ -5,6 +5,12 @@ const pageSize = 12;
 let currentPage = 0;
 let currentKeyword = '';
 
+let currentFilters = {
+    dishTypeId: '',
+    hasEaten: '',
+    visibility: '',
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     loadDishes();
 });
@@ -19,6 +25,10 @@ function loadDishes(page = 0) {
         sort: 'dishName',
         direction: 'asc',
     });
+
+    if (currentFilters.dishTypeId) params.append('dishTypeId', currentFilters.dishTypeId);
+    if (currentFilters.hasEaten !== '') params.append('hasEaten', currentFilters.hasEaten);
+    if (currentFilters.visibility) params.append('visibility', currentFilters.visibility);
 
     fetch(`${API_BASE}?${params}`)
         .then((res) => res.json())
@@ -47,9 +57,11 @@ function renderDishes(dishes) {
 
                     <div class="d-flex align-items-center gap-3">
                         
-                        ${dish.visibility === 'PUBLIC'
-                            ? `<i class="fa-solid fa-globe text-success" title="Công khai"></i>`
-                            : `<i class="fa-solid fa-lock text-secondary" title="Riêng tư"></i>`}
+                        ${
+                            dish.visibility === 'PUBLIC'
+                                ? `<i class="fa-solid fa-globe text-success" title="Công khai"></i>`
+                                : `<i class="fa-solid fa-lock text-secondary" title="Riêng tư"></i>`
+                        }
 
                         <div>
                             <div class="d-flex align-items-center gap-1">
@@ -109,6 +121,111 @@ function renderPagination(totalPages) {
 // Search
 function onSearchInput() {
     currentKeyword = document.getElementById('searchName').value;
+    loadDishes(0);
+}
+
+// Filter
+function openFilterModal() {
+    fetch('/api/dishes/filter')
+        .then((res) => res.json())
+        .then((data) => {
+            renderFilterForm(data.dishTypes, data.visibilities);
+            new bootstrap.Modal(document.getElementById('filterModal')).show();
+        });
+}
+
+function renderFilterForm(dishTypes, visibilities) {
+    document.getElementById('filterModalBody').innerHTML = `
+        <form onsubmit="applyFilters(event)">
+
+            <!-- Dish Type -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Loại món</label>
+                <select class="form-select form-select-lg" id="filterDishType">
+                    <option value="">-- Tất cả --</option>
+                    ${dishTypes
+                        .map(
+                            (t) => `
+                        <option value="${t.id}"
+                            ${currentFilters.dishTypeId == t.id ? 'selected' : ''}>
+                            ${t.label}
+                        </option>
+                    `,
+                        )
+                        .join('')}
+                </select>
+            </div>
+
+            <!-- Has Eaten -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Trạng thái ăn</label>
+                <select class="form-select form-select-lg" id="filterHasEaten">
+                    <option value="">-- Tất cả --</option>
+                    <option value="true" ${currentFilters.hasEaten === 'true' ? 'selected' : ''}>
+                        Đã ăn
+                    </option>
+                    <option value="false" ${currentFilters.hasEaten === 'false' ? 'selected' : ''}>
+                        Chưa ăn
+                    </option>
+                </select>
+            </div>
+
+            <!-- Visibility -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Chia sẻ</label>
+                <select class="form-select form-select-lg" id="filterVisibility">
+                    <option value="">-- Tất cả --</option>
+                    ${visibilities
+                        .map(
+                            (v) => `
+                        <option value="${v}"
+                            ${currentFilters.visibility === v ? 'selected' : ''}>
+                            ${v === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
+                        </option>
+                    `,
+                        )
+                        .join('')}
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="button"
+                        class="btn btn-outline-danger"
+                        onclick="resetFilters()">
+                    Reset
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng
+                </button>
+            </div>
+        </form>
+    `;
+}
+
+function applyFilters(e) {
+    e.preventDefault();
+
+    currentFilters = {
+        dishTypeId: document.getElementById('filterDishType').value,
+        hasEaten: document.getElementById('filterHasEaten').value,
+        visibility: document.getElementById('filterVisibility').value,
+    };
+
+    bootstrap.Modal.getInstance(document.getElementById('filterModal')).hide();
+    loadDishes(0);
+}
+
+function resetFilters() {
+    currentFilters = {
+        dishTypeId: '',
+        hasEaten: '',
+        visibility: '',
+    };
+
+    document.getElementById('filterDishType').value = '';
+    document.getElementById('filterHasEaten').value = '';
+    document.getElementById('filterVisibility').value = '';
+
     loadDishes(0);
 }
 

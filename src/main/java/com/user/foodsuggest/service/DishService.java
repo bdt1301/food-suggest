@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.user.foodsuggest.dto.DishFilterDTO;
 import com.user.foodsuggest.model.Dish;
 import com.user.foodsuggest.model.DishType;
 import com.user.foodsuggest.model.User;
@@ -43,6 +44,22 @@ public class DishService {
         return dishRepository
                 .findByOwnerAndDishNameContainingIgnoreCase(
                         user, keyword.trim(), pageable);
+    }
+
+    // Filter
+    public Page<Dish> searchAdvanced(DishFilterDTO filter, Pageable pageable) {
+        User user = userService.getCurrentUser();
+
+        DishType dishType = null;
+        if (filter.getDishTypeId() != null) {
+            dishType = dishTypeRepository.findById(filter.getDishTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("DishType not found"));
+        }
+
+        String cleanedKeyword = filter.getKeyword().trim();
+
+        return dishRepository.filter(user, cleanedKeyword, dishType, filter.getHasEaten(), filter.getVisibility(),
+                pageable);
     }
 
     // CREATE
