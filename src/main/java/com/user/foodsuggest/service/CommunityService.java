@@ -45,7 +45,7 @@ public class CommunityService {
 
         return page.map(dish -> new CommunityDishDTO(dish.getId(), dish.getDishName(), dish.getNote(),
                 dish.getOwner().getUsername(),
-                currentUser != null && dish.getOwner().getId().equals(currentUser.getId())));
+                currentUser != null && dish.getOwner().getId().equals(currentUser.getId()), currentUser != null));
     }
 
     public CommunityDishDTO findPublicDish(Long id) {
@@ -54,9 +54,10 @@ public class CommunityService {
                         "Món ăn không tồn tại hoặc không được chia sẻ"));
 
         User currentUser = userService.getCurrentUser();
+        boolean isOwner = currentUser != null && dish.getOwner().getId().equals(currentUser.getId());
 
         return new CommunityDishDTO(dish.getId(), dish.getDishName(), dish.getNote(), dish.getOwner().getUsername(),
-                dish.getOwner().getId().equals(currentUser.getId()));
+                isOwner, currentUser != null);
     }
 
     @Transactional

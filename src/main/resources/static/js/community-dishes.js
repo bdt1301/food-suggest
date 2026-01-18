@@ -60,7 +60,7 @@ function renderCommunityDishes(dishes) {
                     </div>
 
                     ${
-                        !dish.owner
+                        dish.authenticated && !dish.owner
                             ? `
                             <div class="mt-2 text-end prevent-open">
                                 <button

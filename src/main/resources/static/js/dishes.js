@@ -249,11 +249,12 @@ function deleteDish(id, dishName) {
                         type: 'success',
                     });
                 })
-                .catch(() => {
+                .catch((err) => {
                     showToast({
                         message: 'Không thể xoá món ăn',
                         type: 'error',
                     });
+                    console.error(err);
                 });
         },
     });

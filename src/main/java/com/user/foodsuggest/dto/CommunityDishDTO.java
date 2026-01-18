@@ -13,5 +13,6 @@ public class CommunityDishDTO {
     private String note;
     private String ownerUsername;
     private boolean isOwner;
+    private boolean authenticated;
 
 }

@@ -8,11 +8,12 @@ function openCloneModal(sourceDishId) {
 
             new bootstrap.Modal(document.getElementById('dishModal')).show();
         })
-        .catch(() => {
+        .catch((err) => {
             showToast({
                 message: 'Vui lòng đăng nhập để copy món ăn',
                 type: 'error',
             });
+            console.error(err);
         });
 }
 

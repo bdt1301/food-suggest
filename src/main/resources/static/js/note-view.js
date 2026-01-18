@@ -13,7 +13,7 @@ function openNoteViewModal(dishId) {
                 ? dish.note
                 : '<span class="text-muted">Chưa có ghi chú</span>';
 
-            if (dish.owner) {
+            if (!dish.authenticated || dish.owner) {
                 cloneBtn.classList.add('d-none');
             } else {
                 cloneBtn.classList.remove('d-none');
