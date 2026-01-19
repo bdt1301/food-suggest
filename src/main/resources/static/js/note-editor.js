@@ -3,12 +3,21 @@ let currentDishId = null;
 let originalNoteHtml = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const Size = Quill.import('attributors/style/size');
+    Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px'];
+    Quill.register(Size, true);
+
     noteQuill = new Quill('#noteEditor', {
         theme: 'snow',
         modules: {
             toolbar: [
+                [{ size: Size.whitelist }],
                 ['bold', 'italic', 'underline'],
+                [{ color: [] }, { background: [] }],
+                [{ align: [] }],
                 [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link', 'image'],
+                ['clean'],
             ],
         },
     });

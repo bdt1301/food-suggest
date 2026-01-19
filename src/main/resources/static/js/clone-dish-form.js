@@ -53,7 +53,7 @@ function renderCloneDishForm(dish, dishTypes) {
                 </select>
                 <button
                     type="button"
-                    class="btn btn-outline-primary btn-sm"
+                    class="btn btn-outline-secondary btn-sm"
                     onclick="toggleNewDishType()"
                 >
                     Không có loại nào để chọn?

@@ -29,6 +29,7 @@ This project was developed and tested using the following **personal development
 | Frontend | HTML, CSS, JavaScript |
 | UI Framework | Bootstrap |
 | Template Engine | Thymeleaf |
+| Rich Text Editor | Quill.js |
 | Database | PostgreSQL |
 
 ---
@@ -77,6 +78,7 @@ Role-Based Access Control (**RBAC**) is implemented using **Spring Security**.
 - 👁️ Set dish visibility (**PUBLIC / PRIVATE**)
 - 🌍 Community dishes page (public dishes)
 - 📋 Clone dishes from Community to personal list
+- 📝 Rich text editor for dish notes (powered by **Quill.js**)
 - 🔍 Search & filter dishes
 - 🔐 Role-based UI rendering (Anonymous / User)
 - 💬 Confirmation modals for critical actions
