@@ -1,6 +1,7 @@
 let noteQuill;
 let currentDishId = null;
 let originalNoteHtml = '';
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
 document.addEventListener('DOMContentLoaded', () => {
     const Size = Quill.import('attributors/style/size');
@@ -26,7 +27,76 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         },
     });
+
+    setupPasteHandler(noteQuill);
 });
+
+function setupPasteHandler(quill) {
+    quill.root.addEventListener(
+        'paste',
+        async (e) => {
+            const clipboardItems = e.clipboardData?.items;
+            if (!clipboardItems) return;
+
+            // Biến để kiểm tra xem trong đống paste có ảnh không
+            let hasImage = false;
+            for (const item of clipboardItems) {
+                if (item.type.startsWith('image/')) {
+                    hasImage = true;
+                    break;
+                }
+            }
+
+            // NẾU CÓ ẢNH, CHẶN NGAY LẬP TỨC TRƯỚC VÒNG LẶP
+            if (hasImage) {
+                e.preventDefault();
+                e.stopPropagation(); // Ngăn Quill can thiệp vào
+            } else {
+                return; // Nếu không có ảnh thì để Quill xử lý text bình thường
+            }
+
+            // Xử lý upload ảnh
+            for (const item of clipboardItems) {
+                if (item.type.startsWith('image/')) {
+                    const blob = item.getAsFile();
+                    if (!blob) continue;
+
+                    if (blob.size > MAX_IMAGE_SIZE) {
+                        showToast({ message: 'Chỉ cho phép ảnh tối đa 2MB', type: 'warning' });
+                        continue;
+                    }
+
+                    const uploadingToast = await showToast({
+                        message: 'Đang upload ảnh từ clipboard, vui lòng đợi...',
+                        type: 'info',
+                        delay: 999999,
+                    });
+
+                    try {
+                        // Truyền blob trực tiếp vào hàm upload như đã thảo luận
+                        const imageUrl = await uploadImageToServer(blob);
+
+                        // Chèn ảnh từ Cloudinary vào đúng vị trí con trỏ
+                        const range = quill.getSelection(true);
+                        quill.insertEmbed(range.index, 'image', imageUrl);
+                        quill.setSelection(range.index + 1);
+
+                        uploadingToast.hide();
+                        showToast({
+                            message: 'Upload ảnh thành công từ clipboard',
+                            type: 'success',
+                        });
+                    } catch (err) {
+                        uploadingToast.hide();
+                        showToast({ message: 'Upload ảnh thất bại từ clipboard', type: 'error' });
+                        console.error(err);
+                    }
+                }
+            }
+        },
+        true,
+    ); // Sử dụng useCapture = true để ưu tiên xử lý trước Quill
+}
 
 async function uploadImageToServer(file) {
     const formData = new FormData();
@@ -44,7 +114,6 @@ async function uploadImageToServer(file) {
 }
 
 function imageHandler() {
-    const MAX_SIZE = 2 * 1024 * 1024;
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
@@ -62,7 +131,7 @@ function imageHandler() {
             return;
         }
 
-        if (file.size > MAX_SIZE) {
+        if (file.size > MAX_IMAGE_SIZE) {
             showToast({
                 message: 'Chỉ cho phép ảnh tối đa 2MB',
                 type: 'warning',
@@ -73,7 +142,7 @@ function imageHandler() {
         const uploadingToast = await showToast({
             message: 'Đang upload ảnh, vui lòng đợi…',
             type: 'info',
-            delay: 9999,
+            delay: 999999,
         });
 
         try {
@@ -83,18 +152,17 @@ function imageHandler() {
             noteQuill.insertEmbed(range.index, 'image', imageUrl);
 
             uploadingToast.hide();
-
             showToast({
                 message: 'Upload ảnh thành công',
                 type: 'success',
             });
-        } catch (e) {
+        } catch (err) {
             uploadingToast.hide();
-
             showToast({
-                message: e.message || 'Upload ảnh thất bại',
+                message: err.message || 'Upload ảnh thất bại',
                 type: 'error',
             });
+            console.error(err);
         }
     };
 }
