@@ -4,24 +4,100 @@ let originalNoteHtml = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     const Size = Quill.import('attributors/style/size');
-    Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px'];
+    Size.whitelist = ['0.75rem', '0.875rem', '1rem', '1.125rem', '1.25rem', '1.5rem', '1.75rem', '2rem', '2.25rem'];
     Quill.register(Size, true);
 
     noteQuill = new Quill('#noteEditor', {
         theme: 'snow',
         modules: {
-            toolbar: [
-                [{ size: Size.whitelist }],
-                ['bold', 'italic', 'underline'],
-                [{ color: [] }, { background: [] }],
-                [{ align: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
-                ['clean'],
-            ],
+            toolbar: {
+                container: [
+                    [{ size: Size.whitelist }],
+                    ['bold', 'italic', 'underline'],
+                    [{ color: [] }, { background: [] }],
+                    [{ align: [] }],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link', 'image'],
+                    ['clean'],
+                ],
+                handlers: {
+                    image: imageHandler,
+                },
+            },
         },
     });
 });
+
+async function uploadImageToServer(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Upload ảnh thất bại');
+    }
+    return await res.text();
+}
+
+function imageHandler() {
+    const MAX_SIZE = 2 * 1024 * 1024;
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast({
+                message: 'Chỉ cho phép upload ảnh',
+                type: 'warning',
+            });
+            return;
+        }
+
+        if (file.size > MAX_SIZE) {
+            showToast({
+                message: 'Chỉ cho phép ảnh tối đa 2MB',
+                type: 'warning',
+            });
+            return;
+        }
+
+        const uploadingToast = await showToast({
+            message: 'Đang upload ảnh, vui lòng đợi…',
+            type: 'info',
+            delay: 9999,
+        });
+
+        try {
+            const imageUrl = await uploadImageToServer(file);
+
+            const range = noteQuill.getSelection(true);
+            noteQuill.insertEmbed(range.index, 'image', imageUrl);
+
+            uploadingToast.hide();
+
+            showToast({
+                message: 'Upload ảnh thành công',
+                type: 'success',
+            });
+        } catch (e) {
+            uploadingToast.hide();
+
+            showToast({
+                message: e.message || 'Upload ảnh thất bại',
+                type: 'error',
+            });
+        }
+    };
+}
 
 function openNoteModal(dishId) {
     currentDishId = dishId;

@@ -4,13 +4,13 @@ function openCloneModal(sourceDishId) {
         .then((data) => {
             renderCloneDishForm(data.dish, data.dishTypes);
 
-            document.getElementById('dishModalTitle').innerText = 'Copy món ăn';
+            document.getElementById('dishModalTitle').innerText = 'Sao chép món ăn';
 
             new bootstrap.Modal(document.getElementById('dishModal')).show();
         })
         .catch((err) => {
             showToast({
-                message: 'Vui lòng đăng nhập để copy món ăn',
+                message: 'Vui lòng đăng nhập để sao chép món ăn',
                 type: 'error',
             });
             console.error(err);
@@ -94,10 +94,7 @@ function renderCloneDishForm(dish, dishTypes) {
     footer.innerHTML = `
         <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
-
-            <button type="submit" form="cloneDishForm" class="btn btn-primary">
-                Lưu
-            </button>
+            <button type="submit" form="cloneDishForm" class="btn btn-primary">Lưu</button>
         </div>
     `;
 }
