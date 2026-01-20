@@ -20,7 +20,7 @@ public class DishTypeRestController {
 
     @PostMapping
     public ResponseEntity<DishType> create(@RequestParam String label) {
-        DishType newDishType = dishTypeService.createIfNotExists(label);
+        DishType newDishType = dishTypeService.create(label);
         return ResponseEntity.status(HttpStatus.CREATED).body(newDishType);
     }
 

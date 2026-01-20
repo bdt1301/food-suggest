@@ -26,9 +26,9 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
 
     List<Dish> findByOwnerAndHasEatenTrue(User owner);
 
-    List<Dish> findByOwnerAndHasEatenFalseAndActiveTrue(User owner);
+    List<Dish> findByOwnerAndHasEatenFalseAndSuggestedTrue(User owner);
 
-    List<Dish> findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(User owner, DishType dishType);
+    List<Dish> findByOwnerAndDishTypeAndHasEatenFalseAndSuggestedFalse(User owner, DishType dishType);
 
     Page<Dish> findByOwner(User owner, Pageable pageable);
 

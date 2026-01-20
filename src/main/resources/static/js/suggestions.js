@@ -253,6 +253,8 @@ function checkEmpty(typeId) {
 function saveType(id) {
     const input = document.getElementById(`input-${id}`);
     const newLabel = input.value.trim();
+    const labelEl = document.getElementById(`label-${id}`);
+    const oldLabel = labelEl.innerText.trim();
 
     if (!newLabel) {
         showToast({
@@ -271,7 +273,23 @@ function saveType(id) {
     })
         .then((res) => res.json())
         .then((data) => {
-            document.getElementById(`label-${id}`).innerText = data.label;
+            if (data.id !== id) {
+                input.value = oldLabel;
+                labelEl.innerText = oldLabel;
+
+                showToast({
+                    message: 'Loại món này đã tồn tại',
+                    type: 'info',
+                });
+            } else {
+                labelEl.innerText = data.label;
+
+                showToast({
+                    message: 'Cập nhật loại món thành công',
+                    type: 'success',
+                });
+            }
+
             cancelEditType(id);
         })
         .catch((err) => {

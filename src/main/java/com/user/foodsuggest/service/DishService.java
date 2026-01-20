@@ -121,7 +121,7 @@ public class DishService {
         User user = userService.getCurrentUser();
 
         return dishRepository
-                .findByOwnerAndHasEatenFalseAndActiveTrue(user)
+                .findByOwnerAndHasEatenFalseAndSuggestedTrue(user)
                 .stream()
                 .collect(Collectors.groupingBy(
                         d -> d.getDishType().getId()));
@@ -133,13 +133,13 @@ public class DishService {
         DishType type = dishTypeRepository.findById(dishTypeId)
                 .orElseThrow(() -> new EntityNotFoundException("DishType not found"));
 
-        List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(user, type);
+        List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndSuggestedFalse(user, type);
 
         if (pool.isEmpty())
             return null;
 
         Dish random = pool.get(new Random().nextInt(pool.size()));
-        random.setActive(true);
+        random.setSuggested(true);
 
         return dishRepository.save(random);
     }
@@ -150,15 +150,15 @@ public class DishService {
         Dish current = findOwnedDish(id);
         DishType type = current.getDishType();
 
-        List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndActiveFalse(user, type);
+        List<Dish> pool = dishRepository.findByOwnerAndDishTypeAndHasEatenFalseAndSuggestedFalse(user, type);
 
         if (pool.isEmpty())
             return null;
 
         Dish random = pool.get(new Random().nextInt(pool.size()));
 
-        current.setActive(false);
-        random.setActive(true);
+        current.setSuggested(false);
+        random.setSuggested(true);
 
         dishRepository.save(current);
         return dishRepository.save(random);
@@ -166,14 +166,14 @@ public class DishService {
 
     public void remove(Long id) {
         Dish dish = findOwnedDish(id);
-        dish.setActive(false);
+        dish.setSuggested(false);
         dishRepository.save(dish);
     }
 
     public Dish markAsEaten(Long id) {
         Dish dish = findOwnedDish(id);
         dish.setHasEaten(true);
-        dish.setActive(false);
+        dish.setSuggested(false);
         return dishRepository.save(dish);
     }
 

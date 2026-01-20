@@ -26,7 +26,7 @@ public class DishTypeService {
 
     // ===== CREATE =====
     @Transactional
-    public DishType createIfNotExists(String label) {
+    public DishType create(String label) {
         User user = userService.getCurrentUser();
         String normalized = label.trim();
 
@@ -34,26 +34,27 @@ public class DishTypeService {
             throw new RuntimeException("Tên loại món không hợp lệ");
         }
 
-        return dishTypeRepository
-                .findByLabelIgnoreCaseAndUser(normalized, user)
-                .orElseGet(() -> {
-                    DishType type = new DishType();
-                    type.setLabel(normalized);
-                    type.setUser(user);
-                    return dishTypeRepository.save(type);
-                });
+        return dishTypeRepository.findByLabelIgnoreCaseAndUser(normalized, user).orElseGet(() -> {
+            DishType type = new DishType();
+            type.setLabel(normalized);
+            type.setUser(user);
+            return dishTypeRepository.save(type);
+        });
     }
 
     // ===== UPDATE =====
     @Transactional
     public DishType update(Long id, String label) {
         User user = userService.getCurrentUser();
+        String normalized = label.trim();
 
         DishType type = dishTypeRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Không có quyền sửa DishType này"));
 
-        type.setLabel(label);
-        return type;
+        return dishTypeRepository.findByLabelIgnoreCaseAndUser(normalized, user).orElseGet(() -> {
+            type.setLabel(normalized);
+            return dishTypeRepository.save(type);
+        });
     }
 
     // ===== DELETE =====

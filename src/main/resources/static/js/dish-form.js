@@ -141,7 +141,7 @@ function submitDishConfirmed(id) {
         dishName: document.getElementById('dishName').value,
         hasEaten: document.getElementById('hasEaten').checked,
         visibility: document.getElementById('isPublic').checked ? 'PUBLIC' : 'PRIVATE',
-        active: false,
+        suggested: false,
         dishType: {
             id: document.getElementById('dishTypeSelect').value,
         },
@@ -217,20 +217,34 @@ async function addDishType() {
         const dishType = await response.json();
         const select = document.getElementById('dishTypeSelect');
 
-        const option = document.createElement('option');
-        option.value = dishType.id;
-        option.textContent = dishType.label;
-        option.selected = true;
+        // Check option đã tồn tại chưa
+        let existingOption = [...select.options].find((opt) => opt.value == dishType.id);
 
-        select.appendChild(option);
+        if (existingOption) {
+            // Có thì chọn
+            existingOption.selected = true;
+
+            showToast({
+                message: 'Loại món này đã tồn tại',
+                type: 'info',
+            });
+        } else {
+            // Chưa có thì tạo mới
+            const option = document.createElement('option');
+            option.value = dishType.id;
+            option.textContent = dishType.label;
+            option.selected = true;
+
+            select.appendChild(option);
+
+            showToast({
+                message: 'Loại món mới đã được tạo',
+                type: 'success',
+            });
+        }
 
         input.value = '';
         document.getElementById('newDishTypeBox').classList.add('d-none');
-
-        showToast({
-            message: `Loại món mới đã được tạo`,
-            type: 'success',
-        });
     } catch (err) {
         showToast({
             message: 'Không thể tạo loại món',

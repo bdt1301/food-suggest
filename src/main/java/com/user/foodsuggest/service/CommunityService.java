@@ -94,7 +94,7 @@ public class CommunityService {
 
         // Clone về luôn là món riêng
         dish.setHasEaten(false);
-        dish.setActive(false);
+        dish.setSuggested(false);
         dish.setVisibility(Visibility.PRIVATE);
         dish.setNote(source.getNote());
 

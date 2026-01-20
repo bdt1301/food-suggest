@@ -27,7 +27,7 @@ public class Dish {
     private String note;
 
     private boolean hasEaten = false;
-    private boolean active = false;
+    private boolean suggested = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
