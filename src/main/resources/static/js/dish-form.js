@@ -126,14 +126,24 @@ function submitDish(event, id) {
 
     const dishName = document.getElementById('dishName').value;
 
-    openConfirmModal({
-        title: id ? 'Cập nhật món ăn' : 'Thêm món ăn',
-        message: `Bạn có chắc muốn ${id ? 'cập nhật' : 'thêm'} món <b>"${dishName}"</b> không?`,
-        confirmText: id ? 'Cập nhật' : 'Thêm',
-        confirmClass: id ? 'btn-success' : 'btn-primary',
-        onConfirm: () => submitDishConfirmed(id),
-        onCancel: () => dishModal.show(),
-    });
+    // Đợi dishModal đóng xong rồi mới mở confirmModal
+    dishModalEl.addEventListener(
+        'hidden.bs.modal',
+        function handler() {
+            dishModalEl.removeEventListener('hidden.bs.modal', handler);
+
+            openConfirmModal({
+                title: id ? 'Cập nhật món ăn' : 'Thêm món ăn',
+                message: `Bạn có chắc muốn ${id ? 'cập nhật' : 'thêm'} món <b>"${dishName}"</b> không?`,
+                confirmText: id ? 'Cập nhật' : 'Thêm',
+                confirmClass: id ? 'btn-success' : 'btn-primary',
+                onConfirm: () => submitDishConfirmed(id),
+                onCancel: () => dishModal.show(),
+            });
+        },
+        { once: true },
+    );
+
 }
 
 function submitDishConfirmed(id) {
